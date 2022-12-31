@@ -1,0 +1,32 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    width: 100%;
+    padding: 10px 20px;
+    height: 6%;
+    background: #7d3aa8;
+    align-items: center;
+    box-shadow: 0px 2px 8px 1px rgba(0, 0, 0, 0.25);
+}
+.navbar-logo {
+    display: flex;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+.navbar-logo h3 {
+    font-size: 19px;
+    margin-left: 10px;
+}
+.navbar-actions {
+    display: flex;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+.navbar-actions div{
+    margin-left: 10px;
+}

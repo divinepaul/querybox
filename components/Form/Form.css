@@ -1,0 +1,12 @@
+.input-row {
+    display: flex;
+}
+.input-gap {
+    margin-left: 20px;
+}
+
+@media only screen and (max-width: 768px) {
+    .input-row {
+        flex-direction: column;
+    }
+}

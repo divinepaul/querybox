@@ -1,0 +1,12 @@
+.hero-container {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    place-items: center;
+}
+.hero-container h1 {
+    font-size: 100px;
+    font-weight: 100;
+    text-transform: uppercase;
+    letter-spacing: 30px;
+}
