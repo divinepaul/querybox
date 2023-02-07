@@ -1,5 +1,3 @@
-//import { useEffect, useRef } from "react";
-//import { Link } from "react-router-dom";
 import Form from "../../components/Form/Form";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -24,16 +22,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import deepcopy from "deepcopy";
-
-//async function getData(){
-//let res = await fetch("/api/hello");
-//let obj = await res.json();
-//console.log(obj);
-//}
+import { countryList } from "../../lib/constants";
 
 
-let adminUserAddForm = {
-    apiRoute: '/api/admin/users/add',
+
+let addStaffForm = {
+    apiRoute: '/api/admin/staff/add',
     submitButtonText: "Add",
     inputs: {
         "email": {
@@ -58,6 +52,91 @@ let adminUserAddForm = {
             required: true,
             minLength: 5,
             maxLength: 50,
+        },
+        "staff_fname": {
+            type: "text",
+            group: "row1",
+            label: "First Name",
+            required: true,
+            minLength: 5,
+            maxLength: 15,
+        },
+        "staff_lname": {
+            type: "text",
+            group: "row1",
+            label: "Last Name",
+            required: true,
+            minLength: 2,
+            maxLength: 15,
+        },
+        "staff_house_name": {
+            type: "text",
+            label: "House Name",
+            group: "row2",
+            required: true,
+            minLength: 2,
+            maxLength: 20,
+        },
+        "staff_street": {
+            type: "text",
+            label: "Street",
+            group: "row2",
+            required: true,
+            minLength: 5,
+            maxLength: 20,
+        },
+        "staff_city": {
+            type: "text",
+            label: "City",
+            group: "row5",
+            required: true,
+            minLength: 2,
+            maxLength: 20,
+        },
+        "staff_state": {
+            type: "text",
+            label: "State",
+            group: "row5",
+            required: true,
+            minLength: 5,
+            maxLength: 20,
+        },
+        "staff_pincode": {
+            type: "text",
+            label: "Pincode",
+            datatype: "number",
+            group: "row6",
+            required: true,
+            minLength: 6,
+            maxLength: 7,
+        },
+        "staff_country": {
+            type: "select",
+            label: "Country",
+            value: "in",
+            group: "row6",
+            selectValues: countryList,
+            required: true,
+            minLength: 5,
+            maxLength: 50,
+        },
+        "staff_phone": {
+            type: "text",
+            datatype: "number",
+            label: "Phone",
+            group: "row7",
+            required: true,
+            minLength: 7,
+            maxLength: 10,
+        },
+        "staff_salary": {
+            type: "text",
+            datatype: "number",
+            label: "Salary",
+            group: "row7",
+            required: true,
+            minLength: 4,
+            maxLength: 10,
         },
     }
 };
@@ -84,7 +163,7 @@ let adminUserEditForm = {
     }
 };
 
-export default function AdminUsers() {
+export default function AdminStaff() {
 
     const navigate = useNavigate();
     let ref = useRef();
@@ -101,19 +180,30 @@ export default function AdminUsers() {
     };
 
     let tableHeadersData = [
+        { label: "Id", name: "staff_id", selected: true },
         { label: "Email", name: "email", selected: true },
-        { label: "Password", name: "password", selected: true },
-        { label: "Type", name: "type", selected: true },
+        { label: "First Name", name: "staff_fname", selected: true },
+        { label: "Password", name: "password", selected: false },
+        { label: "Last Name", name: "staff_lname", selected: true },
+        { label: "House Name", name: "staff_house_name", selected: true },
+        { label: "Street", name: "staff_street", selected: true },
+        { label: "City", name: "staff_city", selected: true },
+        { label: "State", name: "staff_state", selected: true },
+        { label: "Country", name: "staff_country", selected: true },
+        { label: "Pincode", name: "staff_pincode", selected: true },
+        { label: "Phone", name: "staff_phone", selected: true },
+        { label: "Salary", name: "staff_salary", selected: true },
+        { label: "Date Added", name: "date_added", selected: false },
         { label: "Status", name: "status", selected: true }
     ];
 
     const [data, setData] = useState(null);
 
     const [tableHeaders, setTableHeaders] = useState(tableHeadersData);
-    const [editForm,setEditForm] = useState(adminUserEditForm);
+    const [editForm, setEditForm] = useState(adminUserEditForm);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [sortBy, setSortBy] = useState('type');
+    const [sortBy, setSortBy] = useState('staff_id');
     const [searchBy, setSearchBy] = useState('');
 
     //const [user, setUser] = useContext(UserContext);
@@ -121,15 +211,13 @@ export default function AdminUsers() {
     useEffect(() => {
         (async () => {
             let feilds = getCurrentFeilds();
-            let [res, data] = await requestWithAuth(navigate, "/api/admin/users/",
+            let [res, data] = await requestWithAuth(navigate, "/api/admin/staff/",
                 { feilds, sortBy, searchBy });
-
             console.log(data);
-
             setData([...data]);
         })();
 
-    }, [tableHeaders, sortBy, searchBy,isAddModalOpen])
+    }, [tableHeaders, sortBy, searchBy, isAddModalOpen, isEditModalOpen])
 
     const changeSortBy = (event) => {
         setSortBy(event.target.value);
@@ -150,6 +238,7 @@ export default function AdminUsers() {
                 if (tableHeaders[i].label == feild) {
                     tableHeadersCopy[i].selected = true;
                 }
+
             }
         });
         setTableHeaders(tableHeadersCopy);
@@ -175,42 +264,48 @@ export default function AdminUsers() {
         return fields;
     }
 
-   let handleAdd = (_) => {
+    let handleAdd = (_) => {
         setIsAddModalOpen(!isAddModalOpen);
     }
 
     let onEdit = (values) => {
-        console.log('onResponse', values)
+        setIsEditModalOpen(false);
     }
 
     let handleEdit = async (id) => {
-
-        let [res, data] = await requestWithAuth(navigate, "/api/admin/users/get",{id});
-        let editFormCopy = deepcopy(editForm);
-        console.log(data);
-
-        Object.keys(data).map(key=>{
-            console.log(key);
-            editFormCopy.inputs[key]["value"] = data[key];
+        let [res, resdata] = await requestWithAuth(navigate, "/api/admin/staff/get", { id });
+        let editFormCopy = deepcopy(addStaffForm);
+        Object.keys(resdata).map(key => {
+            if (editFormCopy.inputs[key] && !["password", "confirm_password"].includes(key)) {
+                editFormCopy.inputs[key]["value"] = resdata[key];
+            }
         });
+        editFormCopy.apiRoute = "/api/admin/staff/edit";
+        editFormCopy.inputs.email.disabled = true;
+        delete editFormCopy.inputs.password;
+        delete editFormCopy.inputs.confirm_password;
+        //editFormCopy.inputs.password.disabled = true;
+        //editFormCopy.inputs.confirm_password.disabled = true;
+        editFormCopy.submitButtonText = "Update";
         setEditForm(editFormCopy);
+        setIsEditModalOpen(true);
     }
 
     let handleDelete = async (id) => {
-        await requestWithAuth(navigate, "/api/admin/users/delete",{id});
+
+        await requestWithAuth(navigate, "/api/admin/staff/delete", { id });
 
         let dataCopy = deepcopy(data);
-
         for (let i = 0; i < dataCopy.length; i++) {
-            if(dataCopy[i].email == id){
+            if (dataCopy[i].email == id) {
                 dataCopy[i].status = !dataCopy[i].status
             }
         }
         setData(dataCopy);
+
         //let feilds = getCurrentFeilds();
         //let [res, data] = await requestWithAuth(navigate, "/api/admin/users/",
-            //{ feilds, sortBy, searchBy });
-
+        //{ feilds, sortBy, searchBy });
         //setData([...data]);
     }
 
@@ -218,8 +313,8 @@ export default function AdminUsers() {
         <div className="admin-main-container">
 
             <div className="admin-header-container">
-                <h1 className="admin-main-title">Users</h1>
-                <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Admin</Button>
+                <h1 className="admin-main-title">All Staff</h1>
+                <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Staff</Button>
             </div>
 
             <div className="data-control-container">
@@ -266,26 +361,27 @@ export default function AdminUsers() {
             </div>
 
             <AnimatePresence>
-            {data &&
-                <table>
-                    <thead>
-                        <tr>
-                            {
-                                returnValues(tableHeaders).map(headerLabel => {
-                                    return <th key={headerLabel}>
-                                        {headerLabel}
-                                    </th>;
+                {data &&
+                    <div style={{overflowX: "auto"}}>
+                    <table>
+                        <thead>
+                            <tr>
+                                {
+                                    returnValues(tableHeaders).map(headerLabel => {
+                                        return <th key={headerLabel}>
+                                            {headerLabel}
+                                        </th>;
 
-                                })}
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((item, i) => {
-                            return (
+                                    })}
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data.map((item, i) => {
+                                return (
                                     <motion.tr
                                         key={i.toString()}
-                                        className={item['status']? "active-tr": "inactive-tr"}
+                                        className={item['status'] ? "active-tr" : "inactive-tr"}
                                         initial={{ opacity: 0, translateY: -10 }}
                                         animate={{ opacity: 1, translateY: 0 }}
                                         exit={{ opacity: 0, translateX: -50 }}
@@ -294,8 +390,7 @@ export default function AdminUsers() {
                                         {Object.keys(item).map((key, j) => {
                                             let feilds = getCurrentFeilds();
                                             if (feilds.includes(key)) {
-                                                return <td
-                                                    key={i.toString() + j.toString()}
+                                                return <motion.td
                                                 >
                                                     {key != "status" ?
                                                         item[key].toString()
@@ -303,32 +398,37 @@ export default function AdminUsers() {
                                                         item[key] ?
                                                             "active" : "inactive"
                                                     }
-                                                </td>
+                                                </motion.td>
                                             }
                                         })}
-                                        <td>
-                                          <Switch checked={item['status']} onChange={()=>{handleDelete(item["email"])}} />
+                                        <td style={{ display: 'flex' }}>
+                                            <Switch checked={item['status']} onChange={() => { handleDelete(item["email"]) }} />
+                                            <IconButton aria-label="edit" onClick={() => handleEdit(item["email"])} >
+                                                <EditIcon />
+                                            </IconButton>
                                         </td>
-                                    </motion.tr>
-                            );
 
-                        })
-                        }
-                    </tbody>
-                </table>
-            }
+                                    </motion.tr>
+                                );
+
+                            })
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                }
             </AnimatePresence>
 
             <Modal isOpen={isAddModalOpen} onClose={() => { setIsAddModalOpen(!isAddModalOpen) }} >
                 <div className="admin-modal">
-                    <h1>Add Admin User</h1>
-                    <Form ref={ref} formDetails={adminUserAddForm} onResponse={handleAdd} />
+                    <h1>Add Staff </h1>
+                    <Form ref={ref} formDetails={addStaffForm} onResponse={handleAdd} />
                 </div>
             </Modal>
 
             <Modal isOpen={isEditModalOpen} onClose={() => { setIsEditModalOpen(!isEditModalOpen) }} >
                 <div className="admin-modal">
-                    <h1>Add Admin User</h1>
+                    <h1>Edit Staff</h1>
                     <Form ref={ref} formDetails={editForm} onResponse={onEdit} />
                 </div>
             </Modal>

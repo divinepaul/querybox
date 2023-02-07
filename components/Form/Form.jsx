@@ -49,24 +49,33 @@ export default forwardRef((props, ref) => {
         if (!checkError()) {
             if (!props.onSubmit) {
                 try {
-                    const rawResponse = await fetch(formDetails.apiRoute, {
+                    let tmpFormValues = formValues; 
+                    if(formDetails.id){
+                        tmpFormValues["id"] = formDetails.id;
+                    }
+                    let rawResponse = await fetch(formDetails.apiRoute, {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Authorization': document.cookie.split("=")[1]
                         },
-                        body: JSON.stringify(formValues)
+                        body: JSON.stringify(formDetails.id ? tmpFormValues : formValues)
                     });
                     const data = await rawResponse.json();
-                    if (props.onResponse) {
+                    if (rawResponse.status == 400){
+                        Object.keys(data.errors).forEach(inputName => {
+                            refs[inputName].current.setInputError(data.errors[inputName]);
+                        });
+                    } else if (rawResponse.status == 200 && props.onResponse) {
                         props.onResponse(data);
                     }
                 } catch (err) {
                     if (props.onError) {
-                        props.onError(err);
-                    } else {
-                        console.error(err);
-                    }
+                            props.onError(err);
+                        } else {
+                            console.error(err);
+                        }
                 }
 
             } else {
@@ -75,35 +84,35 @@ export default forwardRef((props, ref) => {
         }
     }
 
-    let inputElements  = []; 
+    let inputElements = [];
 
-    let inputGroupElements  = {}; 
+    let inputGroupElements = {};
 
     return (
         <div>
             {
                 (Object.keys(formDetails.inputs)).forEach((inputName) => {
-                let inputDetails = formDetails.inputs[inputName];
-                const inputRef = useRef();
-                refs[inputName] = inputRef;
-                    if(!inputDetails.group){
+                    let inputDetails = formDetails.inputs[inputName];
+                    const inputRef = useRef();
+                    refs[inputName] = inputRef;
+                    if (!inputDetails.group) {
                         inputElements.push(<Input ref={inputRef} error={formErrors[inputName]["error"]} key={inputName} name={inputName} onChange={handleChange} onError={handleError} inputDetails={inputDetails} />);
                     } else {
-                        if(!inputGroupElements[inputDetails.group]) {
+                        if (!inputGroupElements[inputDetails.group]) {
                             inputGroupElements[inputDetails.group] = [];
                         }
-                        if(inputGroupElements[inputDetails.group].length == 1){
-                                inputElements.push(
-                                    <div className="input-row">
-                                        {inputGroupElements[inputDetails.group][0]}
-                                        <div className="input-gap" ></div>
-                                        <Input ref={inputRef} error={formErrors[inputName]["error"]} key={inputName} name={inputName} onChange={handleChange} onError={handleError} inputDetails={inputDetails} />
-                                    </div>);
+                        if (inputGroupElements[inputDetails.group].length == 1) {
+                            inputElements.push(
+                                <div className="input-row">
+                                    {inputGroupElements[inputDetails.group][0]}
+                                    <div className="input-gap" ></div>
+                                    <Input ref={inputRef} error={formErrors[inputName]["error"]} key={inputName} name={inputName} onChange={handleChange} onError={handleError} inputDetails={inputDetails} />
+                                </div>);
                         } else {
                             inputGroupElements[inputDetails.group].push(<Input ref={inputRef} error={formErrors[inputName]["error"]} key={inputName} name={inputName} onChange={handleChange} onError={handleError} inputDetails={inputDetails} />);
                         }
                     }
-            })}
+                })}
             {inputElements}
             <Button onClick={handleSubmit} variant="contained">{formDetails.submitButtonText}</Button>
         </div>

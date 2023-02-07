@@ -4,6 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
+import './Input.css';
 
 export default forwardRef((props, ref) => {
     let [inputDetails, setInputDetails] = useState({ value: "", ...props.inputDetails });
@@ -18,15 +19,23 @@ export default forwardRef((props, ref) => {
     };
 
     let setValue = (event) => {
+
+        setInputDetails({ ...inputDetails, value: event.target.value });
+
         if (inputDetails.maxLength && event.target.value.length > inputDetails.maxLength) {
             inputDetails.maxLengthError ?
                 setError(inputDetails.minLengthError) :
                 setError(`${inputDetails.label} canonot be more than ${inputDetails.maxLength} characters.`);
             return;
-        } else {
-            setError("");
         }
-        setInputDetails({ ...inputDetails, value: event.target.value });
+        if (inputDetails.datatype == "number" && (/[^0-9]+/g.test(event.target.value))) {
+            inputDetails.dataTypeError ?
+                setError(inputDetails.dataTypeError) :
+                setError(`${inputDetails.label} cannot contain any alphabets`);
+            return;
+        }
+        setError("");
+
     }
 
     useImperativeHandle(ref, () => ({
@@ -49,30 +58,31 @@ export default forwardRef((props, ref) => {
     }, [error]);
 
     let checkErrors = (event) => {
-        if (inputDetails.required && !inputDetails.value) {
+        if (inputDetails.required && !inputDetails.value.toString().trim()) {
             inputDetails.requiredError ?
                 setError(inputDetails.requiredError) :
                 setError(`${inputDetails.label} cannot be empty`);
             return true;
         }
-        if (inputDetails.minLength && inputDetails.value.length < inputDetails.minLength) {
+        if (inputDetails.minLength && inputDetails.value.toString().length < inputDetails.minLength) {
             inputDetails.minLengthError ?
                 setError(inputDetails.minLengthError) :
                 setError(`${inputDetails.label} canonot be less than ${inputDetails.minLength} characters.`);
             return true;
         }
         if (inputDetails.type == "email" && !validateEmail(inputDetails.value)) {
-            inputDetails.minLengthError ?
+            inputDetails.emailError ?
                 setError(inputDetails.emailError) :
                 setError(`Not a valid Email.`);
             return true;
         }
 
-        if (inputDetails.maxLength && inputDetails.value.length > inputDetails.maxLength) {
+
+        if (inputDetails.maxLength && inputDetails.value.toString().length > inputDetails.maxLength) {
             inputDetails.maxLengthError ?
                 setError(inputDetails.minLengthError) :
                 setError(`${inputDetails.label} canonot be more than ${inputDetails.maxLength} characters.`);
-            return true ;
+            return true;
         }
         return false;
     }
@@ -83,28 +93,13 @@ export default forwardRef((props, ref) => {
             width: inputDetails.width ? inputDetails.width : '300px',
             marginBottom: inputDetails.marginBottom ? inputDetails.marginBottom : '30px',
         }}>
-            {inputDetails.type != "select" ?
-                <TextField
-                    type={inputDetails.type}
-                    onBlur={checkErrors}
-                    color={inputDetails.color}
-                    fullWidth={true}
-                    onChange={setValue}
-                    required={inputDetails.required}
-                    disabled={inputDetails.disabled}
-                    error={error.length ? true : false}
-                    helperText={error}
-                    value={inputDetails.value}
-                    label={inputDetails.label}
-                    variant="outlined"
-                />
-                :
+            {inputDetails.type == "select" ?
                 <FormControl fullWidth>
                     <InputLabel id="demo-simple-select-label">{inputDetails.label}</InputLabel>
                     <Select
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
-                        label="Age"
+                        label={inputDetails.label}
                         color={inputDetails.color}
                         required={inputDetails.required}
                         disabled={inputDetails.disabled}
@@ -116,6 +111,36 @@ export default forwardRef((props, ref) => {
                         })}
                     </Select>
                 </FormControl>
+                :
+                inputDetails.type == "textarea" ?
+                    <>
+                        <p className="input-label">
+                            {inputDetails.label}
+                        </p>
+                        <textarea className={error.length ? "error" : ""}
+                            onBlur={checkErrors}
+                            onChange={setValue}
+                            value={inputDetails.value}
+                        >
+                        </textarea>
+                        <p className="input-error">{error.length ? error : null}</p>
+                    </>
+                    :
+
+                    <TextField
+                        type={inputDetails.type}
+                        onBlur={checkErrors}
+                        color={inputDetails.color}
+                        fullWidth={true}
+                        onChange={setValue}
+                        required={inputDetails.required}
+                        disabled={inputDetails.disabled}
+                        error={error.length ? true : false}
+                        helperText={error}
+                        value={inputDetails.value}
+                        label={inputDetails.label}
+                        variant="outlined"
+                    />
             }
         </div>
     );

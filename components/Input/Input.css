@@ -1,0 +1,24 @@
+.input-label {
+    font-family: 'Roboto', sans-serif;
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+}
+.input-error {
+    color: red;
+}
+.error {
+    border: 2px solid red;
+}
+textarea {
+    resize: none;
+    border-radius: 6px;
+    font-size: 18px;
+    border: 2px solid #555; 
+    width: 500px;
+    height: 200px;
+    padding: 10px;
+}
+textarea:focus {
+    border: 2px solid #555; 
+}

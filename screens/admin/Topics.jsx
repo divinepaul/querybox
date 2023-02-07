@@ -1,7 +1,4 @@
-//import { useEffect, useRef } from "react";
-//import { Link } from "react-router-dom";
 import Form from "../../components/Form/Form";
-
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { requestWithAuth } from "../../lib/random_functions";
@@ -25,66 +22,36 @@ import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import deepcopy from "deepcopy";
 
-//async function getData(){
-//let res = await fetch("/api/hello");
-//let obj = await res.json();
-//console.log(obj);
-//}
-
-
-let adminUserAddForm = {
-    apiRoute: '/api/admin/users/add',
-    submitButtonText: "Add",
+let addTopicForm = {
+    apiRoute: '/api/admin/topics/add',
+    submitButtonText: "Add Topic",
     inputs: {
-        "email": {
-            type: "email",
-            label: "Email",
+        "category_id": {
+            type: "select",
+            label: "Category",
+            value: "in",
             required: true,
             minLength: 5,
             maxLength: 50,
         },
-        "password": {
-            type: "password",
-            label: "Password",
-            group: "row3",
+        "topic_name": {
+            type: "text",
+            label: "Topic Name",
+            required: true,
+            minLength: 3,
+            maxLength: 30,
+        },
+        "topic_description": {
+            type: "textarea",
+            width: "500px",
+            label: "Topic Description",
             required: true,
             minLength: 5,
-            maxLength: 50,
-        },
-        "confirm_password": {
-            type: "password",
-            label: "Confirm Password",
-            group: "row3",
-            required: true,
-            minLength: 5,
-            maxLength: 50,
-        },
+        }
     }
 };
 
-let adminUserEditForm = {
-    apiRoute: '/api/admin/users/add',
-    submitButtonText: "Add",
-    inputs: {
-        "email": {
-            type: "email",
-            label: "Email",
-            required: true,
-            minLength: 5,
-            maxLength: 50,
-        },
-        "password": {
-            type: "password",
-            label: "Password",
-            group: "row3",
-            required: true,
-            minLength: 5,
-            maxLength: 50,
-        },
-    }
-};
-
-export default function AdminUsers() {
+export default function AdminTopics() {
 
     const navigate = useNavigate();
     let ref = useRef();
@@ -101,19 +68,22 @@ export default function AdminUsers() {
     };
 
     let tableHeadersData = [
-        { label: "Email", name: "email", selected: true },
-        { label: "Password", name: "password", selected: true },
-        { label: "Type", name: "type", selected: true },
+        { label: "Id", name: "topic_id", selected: true },
+        { label: "Category", name: "category_name", selected: true },
+        { label: "Topic Name", name: "topic_name", selected: true },
+        { label: "Topic Description", name: "topic_description", selected: true },
+        { label: "Date Added", name: "date_added", selected: false },
         { label: "Status", name: "status", selected: true }
     ];
 
     const [data, setData] = useState(null);
 
     const [tableHeaders, setTableHeaders] = useState(tableHeadersData);
-    const [editForm,setEditForm] = useState(adminUserEditForm);
+    const [editForm, setEditForm] = useState({});
+    const [addForm, setAddForm] = useState({});
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [sortBy, setSortBy] = useState('type');
+    const [sortBy, setSortBy] = useState('topic_id');
     const [searchBy, setSearchBy] = useState('');
 
     //const [user, setUser] = useContext(UserContext);
@@ -121,15 +91,13 @@ export default function AdminUsers() {
     useEffect(() => {
         (async () => {
             let feilds = getCurrentFeilds();
-            let [res, data] = await requestWithAuth(navigate, "/api/admin/users/",
+            let [res, data] = await requestWithAuth(navigate, "/api/admin/topics/",
                 { feilds, sortBy, searchBy });
-
             console.log(data);
-
             setData([...data]);
         })();
 
-    }, [tableHeaders, sortBy, searchBy,isAddModalOpen])
+    }, [tableHeaders, sortBy, searchBy, isAddModalOpen, isEditModalOpen])
 
     const changeSortBy = (event) => {
         setSortBy(event.target.value);
@@ -150,6 +118,7 @@ export default function AdminUsers() {
                 if (tableHeaders[i].label == feild) {
                     tableHeadersCopy[i].selected = true;
                 }
+
             }
         });
         setTableHeaders(tableHeadersCopy);
@@ -175,51 +144,67 @@ export default function AdminUsers() {
         return fields;
     }
 
-   let handleAdd = (_) => {
+    let handleAdd = (_) => {
         setIsAddModalOpen(!isAddModalOpen);
     }
 
     let onEdit = (values) => {
-        console.log('onResponse', values)
+        setIsEditModalOpen(false);
     }
 
     let handleEdit = async (id) => {
 
-        let [res, data] = await requestWithAuth(navigate, "/api/admin/users/get",{id});
-        let editFormCopy = deepcopy(editForm);
-        console.log(data);
 
-        Object.keys(data).map(key=>{
-            console.log(key);
-            editFormCopy.inputs[key]["value"] = data[key];
+        let [res, resdata] = await requestWithAuth(navigate, "/api/admin/topics/get", { id });
+        let [res2, categories] = await requestWithAuth(navigate, "/api/admin/category", { feilds: ["category_id","category_name"], sortBy: "category_name", searchBy: '' });
+        let editFormCopy = deepcopy(addTopicForm);
+        let selectValues = categories.map(category => { return {value: category.category_id, label: category.category_name } });
+
+        editFormCopy.inputs.category_id["selectValues"] = selectValues;
+        editFormCopy.inputs.category_id["value"] = selectValues[0]['value'];
+
+        Object.keys(resdata).map(key => {
+            if (editFormCopy.inputs[key] && !["password", "confirm_password"].includes(key)) {
+                editFormCopy.inputs[key]["value"] = resdata[key];
+            }
         });
+
+        editFormCopy.apiRoute = "/api/admin/topics/edit";
+        editFormCopy.submitButtonText = "Update";
+        editFormCopy.id = id;
         setEditForm(editFormCopy);
+        setIsEditModalOpen(true);
+    }
+
+    let readyAdd = async (id) => {
+        let [res, categories] = await requestWithAuth(navigate, "/api/admin/category", { feilds: ["category_id","category_name"], sortBy: "category_name", searchBy: '' });
+        let selectValues = categories.map(category => { return {value: category.category_id, label: category.category_name } });
+        //let tmpAddTopicForm = deepcopy(addTopicForm);
+        addTopicForm.inputs.category_id["selectValues"] = selectValues;
+        addTopicForm.inputs.category_id["value"] = selectValues[0]['value'];
+        setAddForm(addTopicForm);
+        setIsAddModalOpen(true);
     }
 
     let handleDelete = async (id) => {
-        await requestWithAuth(navigate, "/api/admin/users/delete",{id});
+
+        await requestWithAuth(navigate, "/api/admin/topics/delete", { id });
 
         let dataCopy = deepcopy(data);
-
         for (let i = 0; i < dataCopy.length; i++) {
-            if(dataCopy[i].email == id){
+            if (dataCopy[i].topic_id == id) {
                 dataCopy[i].status = !dataCopy[i].status
             }
         }
         setData(dataCopy);
-        //let feilds = getCurrentFeilds();
-        //let [res, data] = await requestWithAuth(navigate, "/api/admin/users/",
-            //{ feilds, sortBy, searchBy });
-
-        //setData([...data]);
     }
 
     return (
         <div className="admin-main-container">
 
             <div className="admin-header-container">
-                <h1 className="admin-main-title">Users</h1>
-                <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Admin</Button>
+                <h1 className="admin-main-title">Topics</h1>
+                <Button variant="contained" onClick={() => readyAdd()}>Add Topic</Button>
             </div>
 
             <div className="data-control-container">
@@ -266,26 +251,27 @@ export default function AdminUsers() {
             </div>
 
             <AnimatePresence>
-            {data &&
-                <table>
-                    <thead>
-                        <tr>
-                            {
-                                returnValues(tableHeaders).map(headerLabel => {
-                                    return <th key={headerLabel}>
-                                        {headerLabel}
-                                    </th>;
+                {data &&
+                    <div style={{overflowX: "auto"}}>
+                    <table>
+                        <thead>
+                            <tr>
+                                {
+                                    returnValues(tableHeaders).map(headerLabel => {
+                                        return <th key={headerLabel}>
+                                            {headerLabel}
+                                        </th>;
 
-                                })}
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((item, i) => {
-                            return (
+                                    })}
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data.map((item, i) => {
+                                return (
                                     <motion.tr
                                         key={i.toString()}
-                                        className={item['status']? "active-tr": "inactive-tr"}
+                                        className={item['status'] ? "active-tr" : "inactive-tr"}
                                         initial={{ opacity: 0, translateY: -10 }}
                                         animate={{ opacity: 1, translateY: 0 }}
                                         exit={{ opacity: 0, translateX: -50 }}
@@ -294,8 +280,7 @@ export default function AdminUsers() {
                                         {Object.keys(item).map((key, j) => {
                                             let feilds = getCurrentFeilds();
                                             if (feilds.includes(key)) {
-                                                return <td
-                                                    key={i.toString() + j.toString()}
+                                                return <motion.td
                                                 >
                                                     {key != "status" ?
                                                         item[key].toString()
@@ -303,32 +288,37 @@ export default function AdminUsers() {
                                                         item[key] ?
                                                             "active" : "inactive"
                                                     }
-                                                </td>
+                                                </motion.td>
                                             }
                                         })}
-                                        <td>
-                                          <Switch checked={item['status']} onChange={()=>{handleDelete(item["email"])}} />
+                                        <td style={{ display: 'flex' }}>
+                                            <Switch checked={item['status']} onChange={() => { handleDelete(item["topic_id"]) }} />
+                                            <IconButton aria-label="edit" onClick={() => handleEdit(item["topic_id"])} >
+                                                <EditIcon />
+                                            </IconButton>
                                         </td>
-                                    </motion.tr>
-                            );
 
-                        })
-                        }
-                    </tbody>
-                </table>
-            }
+                                    </motion.tr>
+                                );
+
+                            })
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                }
             </AnimatePresence>
 
             <Modal isOpen={isAddModalOpen} onClose={() => { setIsAddModalOpen(!isAddModalOpen) }} >
                 <div className="admin-modal">
-                    <h1>Add Admin User</h1>
-                    <Form ref={ref} formDetails={adminUserAddForm} onResponse={handleAdd} />
+                    <h1>Add Topic </h1>
+                    <Form ref={ref} formDetails={addForm} onResponse={handleAdd} />
                 </div>
             </Modal>
 
             <Modal isOpen={isEditModalOpen} onClose={() => { setIsEditModalOpen(!isEditModalOpen) }} >
                 <div className="admin-modal">
-                    <h1>Add Admin User</h1>
+                    <h1>Edit Topic</h1>
                     <Form ref={ref} formDetails={editForm} onResponse={onEdit} />
                 </div>
             </Modal>

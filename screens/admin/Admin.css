@@ -1,0 +1,47 @@
+.admin-main-container {
+    padding: 3%;
+    padding-top: 3%;
+}
+.admin-main-title {
+    font-weight: 100;
+    margin-bottom: 30px;
+}
+.admin-header-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+.data-control-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+td,th {
+    padding: 10px 15px;
+}
+
+tr:nth-child(even){
+    background: #eee;
+}
+th {
+    background:#555;
+    color:white;
+}
+.admin-modal {
+    min-width: 40vw;
+    min-height: 20vw;
+    padding: 50px;
+}
+.admin-modal h1 {
+    font-weight: 400;
+    margin-bottom: 50px;
+}
+.inactive-tr {
+    opacity: 0.5;
+}
+.inactive-tr td {
+    color: red;
+}
+table {
+    overflow-x: scroll;
+}
