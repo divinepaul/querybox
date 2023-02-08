@@ -21,7 +21,7 @@ import ReactDOM from 'react-dom/client'
 //import '@fontsource/roboto/500.css';
 //import '@fontsource/roboto/700.css';
 //import './lib/random_functions.js';
-import App from './App';
+import App from '../App';
 
 //const theme = createTheme({
     //palette: {

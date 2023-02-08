@@ -20,6 +20,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+import 'katex/dist/katex.min.css'
 import './lib/random_functions.js';
 import AdminUsers from './screens/admin/Users';
 import AdminHome from './screens/admin/Home';
@@ -29,6 +30,8 @@ import AdminStaff from './screens/admin/Staff';
 import AdminCustomers from './screens/admin/Customers';
 import AdminCategories from './screens/admin/Category';
 import AdminTopics from './screens/admin/Topics';
+import StaffHome from './screens/admin/StaffHome';
+import PostQuestion from './screens/user/PostQuestion/PostQuestion';
 
 const theme = createTheme({
     palette: {
@@ -62,54 +65,63 @@ export default function App() {
                         <Route path="/" element={<Screen><Home /></Screen>} />
                         <Route path="/login" element={<Screen><Login /></Screen>} />
                         <Route path="/register" element={<Screen><Register /></Screen>} />
-
-                        <Route path="/hey" element={<><Outlet/></>}>
-                            <Route path="/ok" element={<h1>ok</h1>}/>
-                        </Route>
-
                         <Route path="/admin" element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedUsers={["admin"]}>
                                 <Screen>
                                     <AdminHome />
                                 </Screen>
                             </ProtectedRoute>} />
-                        <Route path="/admin-users" exact element={
-                            <ProtectedRoute>
+                        <Route path="/staff/home" element={
+                            <ProtectedRoute allowedUsers={["admin","staff"]}>
+                                <Screen>
+                                    <StaffHome />
+                                </Screen>
+                            </ProtectedRoute>} />
+                        <Route path="/admin/users" exact element={
+                            <ProtectedRoute  allowedUsers={["admin"]}>
                                 <Screen>
                                     <AdminUsers />
                                 </Screen>
                             </ProtectedRoute>} />
-                        <Route path="/admin-staff" exact element={
-                            <ProtectedRoute>
+                        <Route path="/admin/staff" exact element={
+                            <ProtectedRoute allowedUsers={["admin"]}>
                                 <Screen>
                                     <AdminStaff />
                                 </Screen>
                             </ProtectedRoute>} />
 
-                        <Route path="/admin-customer" exact element={
-                            <ProtectedRoute>
+                        <Route path="/admin/customer" exact element={
+                            <ProtectedRoute allowedUsers={["admin","staff"]}>
                                 <Screen>
                                     <AdminCustomers />
                                 </Screen>
                             </ProtectedRoute>} />
-
-                        <Route path="/admin-category" exact element={
-                            <ProtectedRoute>
+                        <Route path="/admin/category" exact element={
+                            <ProtectedRoute allowedUsers={["admin","staff"]}>
                                 <Screen>
                                     <AdminCategories />
                                 </Screen>
                             </ProtectedRoute>} />
-
-
-                        <Route path="/admin-topics" exact element={
-                            <ProtectedRoute>
+                        <Route path="/admin/topics" exact element={
+                            <ProtectedRoute allowedUsers={["admin","staff"]}>
                                 <Screen>
                                     <AdminTopics />
                                 </Screen>
                             </ProtectedRoute>} />
 
+
+
+                        <Route path="/user/ask" exact element={
+                            <ProtectedRoute allowedUsers={["customer"]}>
+                                <Screen>
+                                    <PostQuestion />
+                                </Screen>
+                            </ProtectedRoute>} />
+
+
                         <Route path="*" element={<NotFound />} />
                         <Route path="/logout" element={<Logout />} />
+
                     </Routes>
                 </UserContext.Provider>
             </BrowserRouter>

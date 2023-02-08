@@ -22,7 +22,9 @@ import { IconButton } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import BadgeIcon from '@mui/icons-material/Badge';
-
+import GroupsIcon from '@mui/icons-material/Groups';
+import BiotechIcon from '@mui/icons-material/Biotech';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 //const Search = styled('div')(({ theme }) => ({
 //position: 'relative',
 //borderRadius: theme.shape.borderRadius,
@@ -75,7 +77,7 @@ export default function NavBar() {
         <div className="navbar">
             <div className="navbar-logo">
 
-                {user && user.type == "admin" ?
+                {user && (user.type == "admin" || user.type == "staff") ?
                     <MenuIcon onClick={toggleDrawer} style={{ color: "white", fontSize: '30px', marginRight: '20px' }} />
                     :
                     <></>
@@ -84,7 +86,7 @@ export default function NavBar() {
                 <Link to="/">
                     <QuestionAnswerIcon style={{ color: "white", fontSize: '30px' }} />
                 </Link>
-                    <h3>querybox</h3>
+                <h3>querybox</h3>
             </div>
             <div className="navbar-search">
             </div>
@@ -105,69 +107,83 @@ export default function NavBar() {
                 }
             </div>
 
-                {user && user.type == "admin" &&
-            <Drawer
-                anchor={"left"}
-                open={isDrawerOpen}
-                onClose={() => { setIsDrawerOpen() }}
-            >
-                <div className="drawer">
-                <h1 className="drawer-title">{user.type} Dashboard </h1>
-                <List onClick={() => { setIsDrawerOpen() }}>
-                        <Link to="/admin-users" >
-                            <ListItem disablePadding>
-                                <ListItemButton selected={location.pathname =="/admin-users"}>
-                                    <ListItemIcon>
-                                        <AccountCircleIcon />
-                                    </ListItemIcon>
-                                    <ListItemText primary={"Users"} />
-                                </ListItemButton>
-                            </ListItem>
-                        </Link>
-                        <Link to="/admin-staff" >
-                            <ListItem disablePadding>
-                                <ListItemButton selected={location.pathname =="/admin-staff"}>
-                                    <ListItemIcon>
-                                         <BadgeIcon />
-                                    </ListItemIcon>
-                                    <ListItemText primary={"Staff"} />
-                                </ListItemButton>
-                            </ListItem>
-                        </Link>
-                        <Link to="/admin-customer" >
-                            <ListItem disablePadding>
-                                <ListItemButton selected={location.pathname =="/admin-customer"}>
-                                    <ListItemIcon>
-                                         <BadgeIcon />
-                                    </ListItemIcon>
-                                    <ListItemText primary={"Customers"} />
-                                </ListItemButton>
-                            </ListItem>
-                        </Link>
-                        <Link to="/admin-category" >
-                            <ListItem disablePadding>
-                                <ListItemButton selected={location.pathname =="/admin-category"}>
-                                    <ListItemIcon>
-                                         <BadgeIcon />
-                                    </ListItemIcon>
-                                    <ListItemText primary={"Category"} />
-                                </ListItemButton>
-                            </ListItem>
-                        </Link>
-                        <Link to="/admin-topics" >
-                            <ListItem disablePadding>
-                                <ListItemButton selected={location.pathname =="/admin-topics"}>
-                                    <ListItemIcon>
-                                         <BadgeIcon />
-                                    </ListItemIcon>
-                                    <ListItemText primary={"Topics"} />
-                                </ListItemButton>
-                            </ListItem>
-                        </Link>
-                </List>
+            {user && (user.type == "admin" || user.type == "staff") &&
+                <Drawer
+                    anchor={"left"}
+                    open={isDrawerOpen}
+                    onClose={() => { setIsDrawerOpen() }}
+                >
+                    <div className="drawer">
+                        <h1 className="drawer-title">{user.type} Dashboard </h1>
+                        <List onClick={() => { setIsDrawerOpen() }}>
+                            {["admin"].includes(user.type) &&
+                                <Link to="/admin/users" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/users"}>
+                                            <ListItemIcon>
+                                                <AccountCircleIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"Users"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
+                            }
 
-                </div>
-            </Drawer>
+                            {["admin"].includes(user.type) &&
+                                <Link to="/admin/staff" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/staff"}>
+                                            <ListItemIcon>
+                                                <BadgeIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"Staff"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
+                            }
+
+                            {["admin", "staff"].includes(user.type) &&
+                                <Link to="/admin/customer" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/customer"}>
+                                            <ListItemIcon>
+                                                <GroupsIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"Customers"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
+                            }
+
+                            {["admin", "staff"].includes(user.type) &&
+                            <Link to="/admin/category" >
+                                <ListItem disablePadding>
+                                    <ListItemButton selected={location.pathname == "/admin/category"}>
+                                        <ListItemIcon>
+                                            <BiotechIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary={"Category"} />
+                                    </ListItemButton>
+                                </ListItem>
+                            </Link>
+                            }
+
+                            {["admin", "staff"].includes(user.type) &&
+                            <Link to="/admin/topics" >
+                                <ListItem disablePadding>
+                                    <ListItemButton selected={location.pathname == "/admin/topics"}>
+                                        <ListItemIcon>
+                                            <AutoStoriesIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary={"Topics"} />
+                                    </ListItemButton>
+                                </ListItem>
+                            </Link>
+                            }
+                        </List>
+
+                    </div>
+                </Drawer>
             }
         </div>
     );

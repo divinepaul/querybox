@@ -9,13 +9,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
---
--- Name: public; Type: SCHEMA; Schema: -; Owner: -
---
-
--- *not* creating schema, since initdb creates it
-
-
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -190,16 +183,6 @@ ALTER SEQUENCE public.tbl_topic_topic_id_seq OWNED BY public.tbl_topic.topic_id;
 
 
 --
--- Name: test; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.test (
-    id integer NOT NULL,
-    name character varying(300)
-);
-
-
---
 -- Name: tbl_category category_id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -273,14 +256,6 @@ ALTER TABLE ONLY public.tbl_staff
 
 ALTER TABLE ONLY public.tbl_topic
     ADD CONSTRAINT tbl_topic_pkey PRIMARY KEY (topic_id);
-
-
---
--- Name: test test_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.test
-    ADD CONSTRAINT test_pkey PRIMARY KEY (id);
 
 
 --

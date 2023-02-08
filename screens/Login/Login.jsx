@@ -34,9 +34,9 @@ export default function Login() {
         if(user.type=="admin"){
             navigate("/admin");
         } else if(user.type == "staff"){
-
+            navigate("/staff/home");
         } else  {
-
+            navigate("/user/ask");
         }
     }
 
