@@ -77,7 +77,6 @@ export default forwardRef((props, ref) => {
             return true;
         }
 
-
         if (inputDetails.maxLength && inputDetails.value.toString().length > inputDetails.maxLength) {
             inputDetails.maxLengthError ?
                 setError(inputDetails.minLengthError) :

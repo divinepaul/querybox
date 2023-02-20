@@ -9,7 +9,6 @@ import './Login.css';
 //async function getData(){
 //let res = await fetch("/api/hello");
 //let obj = await res.json();
-//console.log(obj);
 //}
 
 export default function Login() {
@@ -27,16 +26,15 @@ export default function Login() {
     const [user, setUser] = useContext(UserContext);
 
     let handleSubmit = async (values) => {
-        console.log(values);
         let user = values.user;
         //let [_, data] = await requestWithAuth(navigate, "/api/auth/user");
         setUser(user);
         if(user.type=="admin"){
-            navigate("/admin");
+            navigate("/admin/users");
         } else if(user.type == "staff"){
-            navigate("/staff/home");
+            navigate("/admin/customer");
         } else  {
-            navigate("/user/ask");
+            navigate("/questions/");
         }
     }
 

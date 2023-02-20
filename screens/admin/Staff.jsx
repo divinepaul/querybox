@@ -22,7 +22,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import deepcopy from "deepcopy";
-import { countryList } from "../../lib/constants";
+import { countryList, countryListShort } from "../../lib/constants";
 
 
 
@@ -117,8 +117,6 @@ let addStaffForm = {
             group: "row6",
             selectValues: countryList,
             required: true,
-            minLength: 5,
-            maxLength: 50,
         },
         "staff_phone": {
             type: "text",
@@ -126,7 +124,7 @@ let addStaffForm = {
             label: "Phone",
             group: "row7",
             required: true,
-            minLength: 7,
+            minLength: 8,
             maxLength: 10,
         },
         "staff_salary": {
@@ -213,7 +211,6 @@ export default function AdminStaff() {
             let feilds = getCurrentFeilds();
             let [res, data] = await requestWithAuth(navigate, "/api/admin/staff/",
                 { feilds, sortBy, searchBy });
-            console.log(data);
             setData([...data]);
         })();
 
@@ -313,7 +310,7 @@ export default function AdminStaff() {
         <div className="admin-main-container">
 
             <div className="admin-header-container">
-                <h1 className="admin-main-title">All Staff</h1>
+                <h1 className="admin-main-title">Staff</h1>
                 <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Staff</Button>
             </div>
 
@@ -362,60 +359,65 @@ export default function AdminStaff() {
 
             <AnimatePresence>
                 {data &&
-                    <div style={{overflowX: "auto"}}>
-                    <table>
-                        <thead>
-                            <tr>
-                                {
-                                    returnValues(tableHeaders).map(headerLabel => {
-                                        return <th key={headerLabel}>
-                                            {headerLabel}
-                                        </th>;
+                    <div style={{ overflowX: "auto" }}>
+                        <table>
+                            <thead>
+                                <tr>
+                                    {
+                                        returnValues(tableHeaders).map(headerLabel => {
+                                            return <th key={headerLabel}>
+                                                {headerLabel}
+                                            </th>;
 
-                                    })}
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.map((item, i) => {
-                                return (
-                                    <motion.tr
-                                        key={i.toString()}
-                                        className={item['status'] ? "active-tr" : "inactive-tr"}
-                                        initial={{ opacity: 0, translateY: -10 }}
-                                        animate={{ opacity: 1, translateY: 0 }}
-                                        exit={{ opacity: 0, translateX: -50 }}
-                                        transition={{ duration: 0.3, delay: i * 0.1 }}
-                                    >
-                                        {Object.keys(item).map((key, j) => {
-                                            let feilds = getCurrentFeilds();
-                                            if (feilds.includes(key)) {
-                                                return <motion.td
-                                                >
-                                                    {key != "status" ?
-                                                        item[key].toString()
-                                                        :
-                                                        item[key] ?
-                                                            "active" : "inactive"
-                                                    }
-                                                </motion.td>
-                                            }
                                         })}
-                                        <td style={{ display: 'flex' }}>
-                                            <Switch checked={item['status']} onChange={() => { handleDelete(item["email"]) }} />
-                                            <IconButton aria-label="edit" onClick={() => handleEdit(item["email"])} >
-                                                <EditIcon />
-                                            </IconButton>
-                                        </td>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.map((item, i) => {
+                                    return (
+                                        <motion.tr
+                                            key={i.toString()}
+                                            className={item['status'] ? "active-tr" : "inactive-tr"}
+                                            initial={{ opacity: 0, translateY: -10 }}
+                                            animate={{ opacity: 1, translateY: 0 }}
+                                            exit={{ opacity: 0, translateX: -50 }}
+                                            transition={{ duration: 0.3, delay: i * 0.1 }}
+                                        >
+                                            {Object.keys(item).map((key, j) => {
+                                                let feilds = getCurrentFeilds();
+                                                if (feilds.includes(key)) {
+                                                    return <motion.td
+                                                        key={j}
+                                                    >
+                                                        {key == "status" ?
+                                                            item[key] ?
+                                                                "active" : "inactive"
+                                                            :
+                                                            key == "staff_country" ?
+                                                                countryListShort[item[key]]
+                                                                :
+                                                                item[key].toString()
+                                                        }
 
-                                    </motion.tr>
-                                );
+                                                    </motion.td>
+                                                }
+                                            })}
+                                            <td style={{ display: 'flex' }}>
+                                                <Switch checked={item['status']} onChange={() => { handleDelete(item["email"]) }} />
+                                                <IconButton aria-label="edit" onClick={() => handleEdit(item["email"])} >
+                                                    <EditIcon />
+                                                </IconButton>
+                                            </td>
 
-                            })
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                                        </motion.tr>
+                                    );
+
+                                })
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 }
             </AnimatePresence>
 

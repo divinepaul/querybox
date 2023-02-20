@@ -83,7 +83,6 @@ export default function AdminCategories() {
             let feilds = getCurrentFeilds();
             let [res, data] = await requestWithAuth(navigate, "/api/admin/category/",
                 { feilds, sortBy, searchBy });
-            console.log(data);
             setData([...data]);
         })();
 
@@ -145,7 +144,6 @@ export default function AdminCategories() {
     let handleEdit = async (id) => {
         let [res, resdata] = await requestWithAuth(navigate, "/api/admin/category/get", { id });
         let editFormCopy = deepcopy(addCategoryForm);
-        console.log(resdata);
         Object.keys(resdata).map(key => {
             if (editFormCopy.inputs[key] && !["password", "confirm_password"].includes(key)) {
                 editFormCopy.inputs[key]["value"] = resdata[key];
@@ -175,7 +173,7 @@ export default function AdminCategories() {
         <div className="admin-main-container">
 
             <div className="admin-header-container">
-                <h1 className="admin-main-title">All Categories</h1>
+                <h1 className="admin-main-title">Categories</h1>
                 <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Category</Button>
             </div>
 

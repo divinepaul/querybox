@@ -75,12 +75,8 @@ router.post('/add', authMiddleware, csrfMiddleWare, async (req, res) => {
                     email: req.body.email,
                     customer_fname: req.body.customer_fname,
                     customer_lname: req.body.customer_lname,
-                    customer_house_name: req.body.customer_house_name,
-                    customer_street: req.body.customer_street,
-                    customer_city: req.body.customer_city,
-                    customer_state: req.body.customer_state,
-                    customer_country: req.body.customer_country,
-                    customer_pincode: req.body.customer_pincode,
+                    customer_profession: req.body.customer_profession,
+                    customer_education: req.body.customer_education,
                     customer_phone: req.body.customer_phone,
                 })
             })
@@ -104,12 +100,8 @@ router.post('/edit', authMiddleware, csrfMiddleWare, async (req, res) => {
                     .update({
                         customer_fname: req.body.customer_fname,
                         customer_lname: req.body.customer_lname,
-                        customer_house_name: req.body.customer_house_name,
-                        customer_street: req.body.customer_street,
-                        customer_city: req.body.customer_city,
-                        customer_state: req.body.customer_state,
-                        customer_country: req.body.customer_country,
-                        customer_pincode: req.body.customer_pincode,
+                        customer_profession: req.body.customer_profession,
+                        customer_education: req.body.customer_education,
                         customer_phone: req.body.customer_phone,
                     })
             })

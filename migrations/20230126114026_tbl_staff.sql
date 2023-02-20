@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS tbl_staff (
     staff_street varchar(20) NOT NULL,
     staff_city varchar(20) NOT NULL,
     staff_state varchar(20) NOT NULL,
-    staff_country varchar(20) NOT NULL,
+    staff_country varchar(7) NOT NULL,
     staff_pincode varchar(7) NOT NULL,
     staff_phone varchar(10) NOT NULL,
     staff_salary int NOT NULL,

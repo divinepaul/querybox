@@ -1,0 +1,12 @@
+.questions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.question-list-item {
+    padding: 20px 10px;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}

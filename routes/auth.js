@@ -7,9 +7,6 @@ const router = express.Router();
 
 router.post('/login', async (req, res) => {
     // TODO : Fix res.json() 
-    //
-
-
     //let users = await sql`SELECT * FROM tbl_login WHERE email=${req.body.email} AND status=true`;
     let users = await db.select().from("tbl_login").where('email', '=', req.body.email).andWhere('status', '=', true);
     console.log(users);
@@ -27,7 +24,9 @@ router.post('/login', async (req, res) => {
         } else if (user.type == "staff") {
             token = jwt.sign({ email: user.email, type: user.type }, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: '60m' });
         } else if (user.type == "customer") {
-            token = jwt.sign({ email: user.email, type: user.type }, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: '60m' });
+            let customers = await db.select().from("tbl_customer").where('email', '=', user.email);
+            let customer = customers[0];
+            token = jwt.sign({ email: user.email, type: user.type, customer_id: customer.customer_id }, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: '60m' });
         }
 
 
@@ -72,25 +71,22 @@ router.post('/register', async (req, res) => {
                     email: req.body.email,
                     customer_fname: req.body.customer_fname,
                     customer_lname: req.body.customer_lname,
-                    customer_house_name: req.body.customer_house_name,
-                    customer_street: req.body.customer_street,
-                    customer_city: req.body.customer_city,
-                    customer_state: req.body.customer_state,
-                    customer_country: req.body.customer_country,
-                    customer_pincode: req.body.customer_pincode,
+                    customer_profession: req.body.customer_profession,
+                    customer_education: req.body.customer_education,
                     customer_phone: req.body.customer_phone,
                 })
             })
 
-            let token = jwt.sign({ email: req.body.email, type: "customer" }, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: '60m' });
+            let customers = await db.select().from("tbl_customer").where('email', '=', req.body.email);
+            let customer = customers[0];
+
+            let token = jwt.sign({ email: req.body.email, type: "customer",customer_id: customer.customer_id }, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: '60m' });
 
             res.cookie('jwttoken', token, {
                 maxAge: 1000 * 60 * 60, // would expire after 60 minutes
                 httpOnly: true,
                 secure: true
             });
-            let customers = await db.select().from("tbl_customer").where('email', '=', req.body.email);
-            let customer = customers[0];
             res.status(200).json({ message: "Sucessfully registered", user: { email: req.body.email, type: "customer", customer_id: customer.customer_id } });
         } catch (error) {
             console.log(error);
@@ -113,7 +109,7 @@ router.get('/user', authMiddleware, async (req, res) => {
     } else if (user.type == "customer") {
         let customers = await db.select().from("tbl_customer").where('email', '=', user.email);
         let customer = customers[0];
-        res.status(200).json({...user,customer_id: customer.customer_id});
+        res.status(200).json({ ...user, customer_id: customer.customer_id });
     } else {
         res.status(200).json(user);
     }

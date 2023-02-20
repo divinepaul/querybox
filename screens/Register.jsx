@@ -12,7 +12,7 @@ export default function Register() {
     let handleSubmit = (values) => {
         let user = values.user;
         setUser(user);
-        navigate("/user/ask");
+        navigate("/questions/");
     }
     return (
         <div className="auth-container">

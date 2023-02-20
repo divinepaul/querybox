@@ -2,7 +2,6 @@
     display: flex;
     justify-content: space-between;
     position: fixed;
-    z-index: 1000;
     top: 0;
     width: 100%;
     padding: 10px 20px;
@@ -40,4 +39,20 @@
 }
 .drawer-title::first-letter {
     text-transform: capitalize;
+}
+.search-bar {
+    padding: 10px 20px;
+    width: 40vw;
+    font-size: 20px;
+    background: rgba(255,255,255,0.10);
+    border: 0;
+    border-radius: 5px;
+    color: white;
+}
+.search-bar::placeholder {
+    color: white;
+}
+.search-bar:focus {
+    outline: none;
+    border: 1px solid white;
 }

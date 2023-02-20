@@ -28,7 +28,6 @@ import deepcopy from "deepcopy";
 //async function getData(){
 //let res = await fetch("/api/hello");
 //let obj = await res.json();
-//console.log(obj);
 //}
 
 
@@ -124,7 +123,6 @@ export default function AdminUsers() {
             let [res, data] = await requestWithAuth(navigate, "/api/admin/users/",
                 { feilds, sortBy, searchBy });
 
-            console.log(data);
 
             setData([...data]);
         })();
@@ -187,10 +185,8 @@ export default function AdminUsers() {
 
         let [res, data] = await requestWithAuth(navigate, "/api/admin/users/get",{id});
         let editFormCopy = deepcopy(editForm);
-        console.log(data);
 
         Object.keys(data).map(key=>{
-            console.log(key);
             editFormCopy.inputs[key]["value"] = data[key];
         });
         setEditForm(editFormCopy);

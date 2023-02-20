@@ -68,56 +68,21 @@ let addCustomerForm = {
             minLength: 2,
             maxLength: 15,
         },
-        "customer_house_name": {
+        "customer_profession": {
             type: "text",
-            label: "House Name",
             group: "row2",
+            label: "Current Profession",
             required: true,
-            minLength: 2,
+            minLength: 3,
             maxLength: 20,
         },
-        "customer_street": {
+        "customer_education": {
             type: "text",
-            label: "Street",
             group: "row2",
+            label: "Current Education",
             required: true,
-            minLength: 5,
+            minLength: 3,
             maxLength: 20,
-        },
-        "customer_city": {
-            type: "text",
-            label: "City",
-            group: "row5",
-            required: true,
-            minLength: 2,
-            maxLength: 20,
-        },
-        "customer_state": {
-            type: "text",
-            label: "State",
-            group: "row5",
-            required: true,
-            minLength: 5,
-            maxLength: 20,
-        },
-        "customer_country": {
-            type: "select",
-            label: "Country",
-            value: "in",
-            group: "row6",
-            selectValues: countryList,
-            required: true,
-            minLength: 5,
-            maxLength: 50,
-        },
-        "customer_pincode": {
-            type: "text",
-            label: "Pincode",
-            datatype: "number",
-            group: "row6",
-            required: true,
-            minLength: 6,
-            maxLength: 7,
         },
 
         "customer_phone": {
@@ -150,15 +115,11 @@ export default function AdminCustomers() {
     let tableHeadersData = [
         { label: "Id", name: "customer_id", selected: true },
         { label: "Email", name: "email", selected: true },
-        { label: "First Name", name: "customer_fname", selected: true },
         { label: "Password", name: "password", selected: false },
+        { label: "First Name", name: "customer_fname", selected: true },
         { label: "Last Name", name: "customer_lname", selected: true },
-        { label: "House Name", name: "customer_house_name", selected: true },
-        { label: "Street", name: "customer_street", selected: true },
-        { label: "City", name: "customer_city", selected: true },
-        { label: "State", name: "customer_state", selected: true },
-        { label: "Country", name: "customer_country", selected: true },
-        { label: "Pincode", name: "customer_pincode", selected: true },
+        { label: "Profession", name: "customer_profession", selected: true },
+        { label: "Education", name: "customer_education", selected: true },
         { label: "Phone", name: "customer_phone", selected: true },
         { label: "Date Added", name: "date_added", selected: false },
         { label: "Status", name: "status", selected: true }
@@ -180,7 +141,6 @@ export default function AdminCustomers() {
             let feilds = getCurrentFeilds();
             let [res, data] = await requestWithAuth(navigate, "/api/admin/customer/",
                 { feilds, sortBy, searchBy });
-            console.log(data);
             setData([...data]);
         })();
 
@@ -280,7 +240,7 @@ export default function AdminCustomers() {
         <div className="admin-main-container">
 
             <div className="admin-header-container">
-                <h1 className="admin-main-title">All Customers</h1>
+                <h1 className="admin-main-title">Customers</h1>
                 <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Customer</Button>
             </div>
 

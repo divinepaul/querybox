@@ -1,0 +1,16 @@
+.user-badge-container {
+    display: flex;
+    align-items: center;
+}
+.user-badge-details {
+    margin-left: 10px;
+}
+.user-badge-name {
+    color: black; 
+}
+.user-badge-job {
+    font-size: 13px;
+}
+.user-badge-education {
+    font-size: 13px;
+}

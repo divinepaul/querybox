@@ -31,8 +31,6 @@ let addTopicForm = {
             label: "Category",
             value: "in",
             required: true,
-            minLength: 5,
-            maxLength: 50,
         },
         "topic_name": {
             type: "text",
@@ -93,7 +91,6 @@ export default function AdminTopics() {
             let feilds = getCurrentFeilds();
             let [res, data] = await requestWithAuth(navigate, "/api/admin/topics/",
                 { feilds, sortBy, searchBy });
-            console.log(data);
             setData([...data]);
         })();
 

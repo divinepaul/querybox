@@ -3,10 +3,12 @@ import './NavBar.css';
 import * as React from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
+import { useNavigate } from "react-router-dom";
 import SearchIcon from '@mui/icons-material/Search';
 import Link from '../Link/Link';
 import { useContext, useState } from "react";
 import UserContext from '../../lib/usercontext';
+import SearchContext from '../../lib/searchcontext';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
@@ -18,13 +20,21 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
-import { IconButton } from '@mui/material';
+import { IconButton, TextField } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import BadgeIcon from '@mui/icons-material/Badge';
 import GroupsIcon from '@mui/icons-material/Groups';
 import BiotechIcon from '@mui/icons-material/Biotech';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import FolderIcon from '@mui/icons-material/Folder';
+import ThumbsUpDownIcon from '@mui/icons-material/ThumbsUpDown';
+import ChatIcon from '@mui/icons-material/Chat';
+import HistoryIcon from '@mui/icons-material/History';
+import ReportIcon from '@mui/icons-material/Report';
+
 //const Search = styled('div')(({ theme }) => ({
 //position: 'relative',
 //borderRadius: theme.shape.borderRadius,
@@ -67,10 +77,19 @@ export default function NavBar() {
 
     const [user, setUser] = useContext(UserContext);
 
+    const [search, setSearch] = useContext(SearchContext);
+
+    const navigate = useNavigate();
+
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     let toggleDrawer = () => {
         setIsDrawerOpen(!isDrawerOpen);
+    }
+
+    let searchQuestions = (searchValue) => {
+        setSearch(searchValue);
+        navigate("/questions");
     }
 
     return (
@@ -89,6 +108,7 @@ export default function NavBar() {
                 <h3>querybox</h3>
             </div>
             <div className="navbar-search">
+                <input className="search-bar" value={search} onChange={(event) => searchQuestions(event.target.value)} placeholder="Search Questions" />
             </div>
             <div className="navbar-actions">
                 {!user ?
@@ -180,6 +200,98 @@ export default function NavBar() {
                                 </ListItem>
                             </Link>
                             }
+
+                            {["admin", "staff"].includes(user.type) &&
+                            <Link to="/admin/questions" >
+                                <ListItem disablePadding>
+                                    <ListItemButton selected={location.pathname == "/admin/questions"}>
+                                        <ListItemIcon>
+                                            <QuestionMarkIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary={"Questions"} />
+                                    </ListItemButton>
+                                </ListItem>
+                            </Link>
+                            }
+
+                            {["admin", "staff"].includes(user.type) &&
+                            <Link to="/admin/answers" >
+                                <ListItem disablePadding>
+                                    <ListItemButton selected={location.pathname == "/admin/answers"}>
+                                        <ListItemIcon>
+                                            <QuestionAnswerIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary={"Answers"} />
+                                    </ListItemButton>
+                                </ListItem>
+                            </Link>
+                            }
+
+                            {["admin", "staff"].includes(user.type) &&
+                            <Link to="/admin/files" >
+                                <ListItem disablePadding>
+                                    <ListItemButton selected={location.pathname == "/admin/files"}>
+                                        <ListItemIcon>
+                                            <FolderIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary={"Files"} />
+                                    </ListItemButton>
+                                </ListItem>
+                            </Link>
+                            }
+
+                            {["admin", "staff"].includes(user.type) &&
+                            <Link to="/admin/votes" >
+                                <ListItem disablePadding>
+                                    <ListItemButton selected={location.pathname == "/admin/votes"}>
+                                        <ListItemIcon>
+                                            <ThumbsUpDownIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary={"Votes"} />
+                                    </ListItemButton>
+                                </ListItem>
+                            </Link>
+                            }
+
+                            {["admin", "staff"].includes(user.type) &&
+                            <Link to="/admin/comments" >
+                                <ListItem disablePadding>
+                                    <ListItemButton selected={location.pathname == "/admin/comments"}>
+                                        <ListItemIcon>
+                                            <ChatIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary={"Comments"} />
+                                    </ListItemButton>
+                                </ListItem>
+                            </Link>
+                            }
+
+                            {["admin", "staff"].includes(user.type) &&
+                            <Link to="/admin/history" >
+                                <ListItem disablePadding>
+                                    <ListItemButton selected={location.pathname == "/admin/history"}>
+                                        <ListItemIcon>
+                                            <HistoryIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary={"History"} />
+                                    </ListItemButton>
+                                </ListItem>
+                            </Link>
+                            }
+
+                            {["admin", "staff"].includes(user.type) &&
+                            <Link to="/admin/complaints" >
+                                <ListItem disablePadding>
+                                    <ListItemButton selected={location.pathname == "/admin/complaints"}>
+                                        <ListItemIcon>
+                                            <ReportIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary={"Complaints"} />
+                                    </ListItemButton>
+                                </ListItem>
+                            </Link>
+                            }
+
                         </List>
 
                     </div>

@@ -13,19 +13,22 @@ export default function ProtectedRoute(props) {
     const [isAuthRequestDone, setIsAuthRequestDone] = useState(false);
 
     useEffect(() => {
+        (async () => {
+            let [res, data] = await requestWithAuth(navigate,"/api/auth/user");
+            if (res.status == 200) {
+                setUser(data);
+                console.log(data);
+            }
             setIsAuthRequestDone(true);
+        })();
     }, []);
 
-    //return 
 
     return (
         <>
-            {!user ?
-                <Screen>
-                    <CircularProgress />
-                </Screen>
+            {!isAuthRequestDone ?
+                <CircularProgress />
                 :
-
                 <>
                     {props.allowedUsers.includes(user.type) ?
                         <>

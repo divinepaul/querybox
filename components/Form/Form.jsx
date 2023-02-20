@@ -2,10 +2,14 @@ import { useEffect, useState, forwardRef, useImperativeHandle, useRef } from "re
 import Button from '@mui/material/Button';
 import Input from "../Input/Input";
 import './Form.css';
+import { useNavigate } from "react-router-dom";
 
 export default forwardRef((props, ref) => {
 
     let [formDetails, setFormDetails] = useState(props.formDetails);
+
+    const navigate = useNavigate();
+
     let refs = {};
 
     let formValuesDummy = {};
@@ -38,11 +42,17 @@ export default forwardRef((props, ref) => {
 
 
     function checkError() {
-        let isCorrect = true;
+        let isWrong = false;
+        let errors = [];
         Object.keys(formValues).forEach(inputName => {
-            isCorrect = refs[inputName].current.validateInput();
+            errors.push(refs[inputName].current.validateInput());
         });
-        return isCorrect;
+        errors.forEach(errorBool => {
+            if(!isWrong){
+                isWrong = errorBool;
+            }
+        });
+        return isWrong;
     }
 
     let handleSubmit = async (_) => {
@@ -63,7 +73,9 @@ export default forwardRef((props, ref) => {
                         body: JSON.stringify(formDetails.id ? tmpFormValues : formValues)
                     });
                     const data = await rawResponse.json();
-                    if (rawResponse.status == 400){
+                    if (rawResponse.status == 401){
+                        navigate("/login");
+                    } else if (rawResponse.status == 400) {
                         Object.keys(data.errors).forEach(inputName => {
                             refs[inputName].current.setInputError(data.errors[inputName]);
                         });

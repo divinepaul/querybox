@@ -17,6 +17,8 @@ router.post('/', authMiddleware, async (req, res) => {
     }
     query.orderBy(req.body.sortBy);
     let users = await query;
+    console.log(users);
+    console.log(new Date(users[0].date_added).toDateString());
     if (users) {
         res.status(200).json(users);
     } else {
@@ -37,7 +39,6 @@ router.post('/get', authMiddleware, async (req, res) => {
 router.post('/delete', authMiddleware, csrfMiddleWare, async (req, res) => {
     let id = req.body.id;
     let data = await db.select().from("tbl_category").where('category_id', '=', id).first();
-    console.log(data);
     try {
         await db('tbl_category')
             .where('category_id', '=', id)
