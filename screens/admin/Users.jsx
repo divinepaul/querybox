@@ -109,7 +109,7 @@ export default function AdminUsers() {
     const [data, setData] = useState(null);
 
     const [tableHeaders, setTableHeaders] = useState(tableHeadersData);
-    const [editForm,setEditForm] = useState(adminUserEditForm);
+    const [editForm, setEditForm] = useState(adminUserEditForm);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [sortBy, setSortBy] = useState('type');
@@ -127,7 +127,7 @@ export default function AdminUsers() {
             setData([...data]);
         })();
 
-    }, [tableHeaders, sortBy, searchBy,isAddModalOpen])
+    }, [tableHeaders, sortBy, searchBy, isAddModalOpen])
 
     const changeSortBy = (event) => {
         setSortBy(event.target.value);
@@ -173,7 +173,7 @@ export default function AdminUsers() {
         return fields;
     }
 
-   let handleAdd = (_) => {
+    let handleAdd = (_) => {
         setIsAddModalOpen(!isAddModalOpen);
     }
 
@@ -183,39 +183,84 @@ export default function AdminUsers() {
 
     let handleEdit = async (id) => {
 
-        let [res, data] = await requestWithAuth(navigate, "/api/admin/users/get",{id});
+        let [res, data] = await requestWithAuth(navigate, "/api/admin/users/get", { id });
         let editFormCopy = deepcopy(editForm);
 
-        Object.keys(data).map(key=>{
+        Object.keys(data).map(key => {
             editFormCopy.inputs[key]["value"] = data[key];
         });
         setEditForm(editFormCopy);
     }
 
     let handleDelete = async (id) => {
-        await requestWithAuth(navigate, "/api/admin/users/delete",{id});
+        await requestWithAuth(navigate, "/api/admin/users/delete", { id });
 
         let dataCopy = deepcopy(data);
 
         for (let i = 0; i < dataCopy.length; i++) {
-            if(dataCopy[i].email == id){
+            if (dataCopy[i].email == id) {
                 dataCopy[i].status = !dataCopy[i].status
             }
         }
         setData(dataCopy);
         //let feilds = getCurrentFeilds();
         //let [res, data] = await requestWithAuth(navigate, "/api/admin/users/",
-            //{ feilds, sortBy, searchBy });
+        //{ feilds, sortBy, searchBy });
 
         //setData([...data]);
     }
+
+    let isFieldActive = (field) => {
+        let isSelected = true;
+        tableHeaders.forEach(header=>{
+            if(field == header.name){
+                isSelected = header.selected;
+            }
+        })
+        return isSelected;
+    }
+
+    let printPDF = async () => {
+        let body = {
+            title: "Users",
+            tableHeaders: tableHeaders,
+            searchBy: searchBy,
+            sortBy: sortBy
+        };
+
+        let res = await fetch("/api/admin/users/print", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': document.cookie.split("=")[1]
+            },
+            body: JSON.stringify(body)
+        });
+        let blob = await res.blob();
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = "report.pdf";
+        document.body.appendChild(a); 
+        a.click();    
+        a.remove();  
+    }
+
+
+
 
     return (
         <div className="admin-main-container">
 
             <div className="admin-header-container">
                 <h1 className="admin-main-title">Users</h1>
-                <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Admin</Button>
+                <div style={{display: 'flex'}}>
+                    <div style={{marginRight: '20px'}}>
+                        <Button variant="contained" onClick={() => printPDF()}>Print</Button>
+                    </div>
+                    <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Admin</Button>
+                </div>
             </div>
 
             <div className="data-control-container">
@@ -262,57 +307,50 @@ export default function AdminUsers() {
             </div>
 
             <AnimatePresence>
-            {data &&
-                <table>
-                    <thead>
-                        <tr>
-                            {
-                                returnValues(tableHeaders).map(headerLabel => {
-                                    return <th key={headerLabel}>
-                                        {headerLabel}
-                                    </th>;
+                {data &&
+                    <table>
+                        <thead>
+                            <tr>
+                                {
+                                    returnValues(tableHeaders).map(headerLabel => {
+                                        return <th key={headerLabel}>
+                                            {headerLabel}
+                                        </th>;
 
-                                })}
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((item, i) => {
-                            return (
+                                    })
+                                }
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data.map((item, i) => {
+                                return (
                                     <motion.tr
                                         key={i.toString()}
-                                        className={item['status']? "active-tr": "inactive-tr"}
+                                        className={item['status'] ? "active-tr" : "inactive-tr"}
                                         initial={{ opacity: 0, translateY: -10 }}
                                         animate={{ opacity: 1, translateY: 0 }}
                                         exit={{ opacity: 0, translateX: -50 }}
                                         transition={{ duration: 0.3, delay: i * 0.1 }}
                                     >
-                                        {Object.keys(item).map((key, j) => {
-                                            let feilds = getCurrentFeilds();
-                                            if (feilds.includes(key)) {
-                                                return <td
-                                                    key={i.toString() + j.toString()}
-                                                >
-                                                    {key != "status" ?
-                                                        item[key].toString()
-                                                        :
-                                                        item[key] ?
-                                                            "active" : "inactive"
-                                                    }
-                                                </td>
-                                            }
-                                        })}
-                                        <td>
-                                          <Switch checked={item['status']} onChange={()=>{handleDelete(item["email"])}} />
-                                        </td>
-                                    </motion.tr>
-                            );
 
-                        })
-                        }
-                    </tbody>
-                </table>
-            }
+                                        {isFieldActive('email') && <td>{item['email']}</td>}
+                                        {isFieldActive('password') && <td>{item['password']}</td>}
+                                        {isFieldActive('type') && <td>{item['type']}</td>}
+                                        {isFieldActive('status') && <td>{item['status'] ? "active" : "inacitve"}</td>}
+
+                                        <td>
+                                            <Switch checked={item['status']} onChange={() => { handleDelete(item["email"]) }} />
+                                        </td>
+
+                                    </motion.tr>
+                                );
+
+                            })
+                            }
+                        </tbody>
+                    </table>
+                }
             </AnimatePresence>
 
             <Modal isOpen={isAddModalOpen} onClose={() => { setIsAddModalOpen(!isAddModalOpen) }} >

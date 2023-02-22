@@ -1,6 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import process from 'process';
 import authRoutes from './routes/auth.js';
 import adminUserRoutes from './routes/admin/users.js';
 import adminStaffRoutes from './routes/admin/staff.js';
@@ -24,6 +25,7 @@ import userVoteRoutes from './routes/posts/votes.js';
 import userCommentRoutes from './routes/posts/comments.js';
 import userAnswersRoutes from './routes/posts/answers.js';
 import userComplaintsRoutes from './routes/posts/complaints.js';
+import userProfileRoutes from './routes/profile.js';
 import { setCSRFCookie } from './middleware.js';
 import * as dotenv from 'dotenv';
 
@@ -36,6 +38,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(fileUpload());
 app.use(setCSRFCookie);
+
+process.on('uncaughtException', function (err) {
+  console.error(err);
+  console.log("Node NOT Exiting...");
+});
 
 try {
     app.use('/api/auth/', authRoutes);
@@ -59,6 +66,7 @@ try {
     app.use('/api/comments/', userCommentRoutes);
     app.use('/api/answers/', userAnswersRoutes);
     app.use('/api/complaints/', userComplaintsRoutes);
+    app.use('/api/profile/', userProfileRoutes);
 
     app.get("*", (req, res) => {
         res.sendFile(path.join(path.resolve(), './dist/index.html'));

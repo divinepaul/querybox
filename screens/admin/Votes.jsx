@@ -1,7 +1,7 @@
 import Form from "../../components/Form/Form";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { requestWithAuth } from "../../lib/random_functions";
+import { requestWithAuth,formatDate } from "../../lib/random_functions";
 import UserContext from "../../lib/usercontext";
 import './Admin.css';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -61,11 +61,10 @@ export default function AdminVotes() {
 
     let tableHeadersData = [
         { label: "Vote Id", name: "vote_id", selected: true },
-        { label: "Customer First Name", name: "customer_fname", selected: true },
-        { label: "Customer Last Name", name: "customer_lname", selected: true },
-        { label: "Customer Last Name", name: "tbl_login.email", selected: true },
+        { label: "Customer Name", name: "full_name", selected: true },
+        { label: "Post", name: "post_id", selected: true },
         { label: "Vote", name: "vote", selected: true },
-        { label: "Date Added", name: "date_added", selected: false },
+        { label: "Date Added", name: "date_added", selected: true },
     ];
 
     const [data, setData] = useState(null);
@@ -170,11 +169,48 @@ export default function AdminVotes() {
         setData(dataCopy);
     }
 
+    let isFieldActive = (field) => {
+        let isSelected = true;
+        tableHeaders.forEach(header => {
+            if (field == header.name) {
+                isSelected = header.selected;
+            }
+        })
+        return isSelected;
+    }
+
+    let printPDF = async () => {
+        let body = {
+            title: "Votes",
+            tableHeaders: tableHeaders,
+            searchBy: searchBy,
+            sortBy: sortBy
+        };
+
+        let res = await fetch("/api/admin/votes/print", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': document.cookie.split("=")[1]
+            },
+            body: JSON.stringify(body)
+        });
+        let blob = await res.blob();
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = "report.pdf";
+        document.body.appendChild(a); 
+        a.click();    
+        a.remove();  
+    }
     return (
         <div className="admin-main-container">
 
             <div className="admin-header-container">
-                <h1 className="admin-main-title">Files</h1>
+                <h1 className="admin-main-title">Votes</h1>
+                <Button variant="contained" onClick={() => printPDF()}>Print</Button>
             </div>
 
             <div className="data-control-container">
@@ -245,30 +281,25 @@ export default function AdminVotes() {
                                             exit={{ opacity: 0, translateX: -50 }}
                                             transition={{ duration: 0.3, delay: i * 0.1 }}
                                         >
-                                            {Object.keys(item).map((key, j) => {
-                                                let feilds = getCurrentFeilds();
-                                                if (feilds.includes(key)) {
-                                                    return <motion.td
-                                                    >
-                                                        {key != "vote" ?
-                                                            item[key].toString()
-                                                            :
-                                                            <>
-                                                                {item[key] == 1 &&
-                                                                    "upvote"}{
-                                                                    item[key] == 0 &&
-                                                                    "neutral"
-                                                                }
-                                                                {item[key] == -1 &&
-                                                                    "downvote"}{
-                                                                    item[key] == 0 &&
-                                                                    "neutral"
-                                                                }
-                                                            </>
-                                                        }
-                                                    </motion.td>
-                                                }
-                                            })}
+
+                                            {isFieldActive('vote_id') && <td>{item['vote_id']}</td>}
+                                            {isFieldActive('full_name') && <td>{item['full_name']}</td>}
+
+                                            {isFieldActive('post_id') && <td>{
+                                                item['type'] == "answer" ?
+                                                    <a href={`/answer-view/${item['link_id']}`}>link to answer</a>
+                                                    :
+                                                    <a href={`/question/${item['link_id']}`}>link to question</a>
+                                            }</td>}
+
+                                            {isFieldActive('vote') && <td>
+                                                {item['vote'] == 1 ? "upvote" : ""}
+                                                {item['vote'] == 0 ? "neutral" : ""}
+                                                {item['vote'] == -1 ? "downvote" : ""}
+                                            </td>
+                                            }
+
+                                            {isFieldActive('date_added') && <td>{formatDate(item['date_added'])}</td>}
 
                                         </motion.tr>
                                     );

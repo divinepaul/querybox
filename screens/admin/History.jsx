@@ -1,7 +1,7 @@
 import Form from "../../components/Form/Form";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { requestWithAuth } from "../../lib/random_functions";
+import { requestWithAuth,formatDate } from "../../lib/random_functions";
 import UserContext from "../../lib/usercontext";
 import './Admin.css';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -62,10 +62,9 @@ export default function AdminHistory() {
     let tableHeadersData = [
         { label: "History Id", name: "history_id", selected: true },
         { label: "Question Title", name: "question_title", selected: true },
-        { label: "Customer Last Name", name: "customer_fname", selected: false },
-        { label: "Customer Last Name", name: "customer_lname", selected: false },
-        { label: "Customer Email", name: "tbl_login.email", selected: true },
-        { label: "Date Added", name: "tbl_history.date_added", selected: false },
+        { label: "Customer Name", name: "full_name", selected: true },
+        { label: "Post", name: "post_id", selected: true },
+        { label: "Date Added", name: "date_added", selected: true },
     ];
 
     const [data, setData] = useState(null);
@@ -170,11 +169,49 @@ export default function AdminHistory() {
         setData(dataCopy);
     }
 
+    let isFieldActive = (field) => {
+        let isSelected = true;
+        tableHeaders.forEach(header => {
+            if (field == header.name) {
+                isSelected = header.selected;
+            }
+        })
+        return isSelected;
+    }
+    
+    let printPDF = async () => {
+        let body = {
+            title: "History",
+            tableHeaders: tableHeaders,
+            searchBy: searchBy,
+            sortBy: sortBy
+        };
+
+        let res = await fetch("/api/admin/history/print", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': document.cookie.split("=")[1]
+            },
+            body: JSON.stringify(body)
+        });
+        let blob = await res.blob();
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = "report.pdf";
+        document.body.appendChild(a); 
+        a.click();    
+        a.remove();  
+    }
+
     return (
         <div className="admin-main-container">
 
             <div className="admin-header-container">
                 <h1 className="admin-main-title">History</h1>
+                <Button variant="contained" onClick={() => printPDF()}>Print</Button>
             </div>
 
             <div className="data-control-container">
@@ -245,20 +282,17 @@ export default function AdminHistory() {
                                             exit={{ opacity: 0, translateX: -50 }}
                                             transition={{ duration: 0.3, delay: i * 0.1 }}
                                         >
-                                            {Object.keys(item).map((key, j) => {
-                                                let feilds = getCurrentFeilds();
-                                                if (feilds.includes(key)) {
-                                                    return <motion.td
-                                                    >
-                                                        {key != "tbl_comment.status" ?
-                                                            item[key].toString()
-                                                            :
-                                                            item[key] ?
-                                                                "active" : "inactive"
-                                                        }
-                                                    </motion.td>
-                                                }
-                                            })}
+
+                                            {isFieldActive('history_id') && <td>{item['history_id']}</td>}
+                                            {isFieldActive('question_title') && <td>{item['question_title']}</td>}
+                                            {isFieldActive('full_name') && <td>{item['full_name']}</td>}
+                                            {isFieldActive('post_id') && <td>{
+                                                item['type'] == "answer" ?
+                                                    <a href={`/answer-view/${item['link_id']}`}>link to answer</a>
+                                                    :
+                                                    <a href={`/question/${item['link_id']}`}>link to question</a>
+                                            }</td>}
+                                            {isFieldActive('date_added') && <td>{formatDate(item['date_added'])}</td>}
 
                                         </motion.tr>
                                     );

@@ -2,7 +2,7 @@ import Form from "../../components/Form/Form";
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { requestWithAuth } from "../../lib/random_functions";
+import { requestWithAuth,formatDate } from "../../lib/random_functions";
 import UserContext from "../../lib/usercontext";
 import './Admin.css';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -116,12 +116,11 @@ export default function AdminCustomers() {
         { label: "Id", name: "customer_id", selected: true },
         { label: "Email", name: "email", selected: true },
         { label: "Password", name: "password", selected: false },
-        { label: "First Name", name: "customer_fname", selected: true },
-        { label: "Last Name", name: "customer_lname", selected: true },
+        { label: "Full Name", name: "full_name", selected: true },
         { label: "Profession", name: "customer_profession", selected: true },
         { label: "Education", name: "customer_education", selected: true },
         { label: "Phone", name: "customer_phone", selected: true },
-        { label: "Date Added", name: "date_added", selected: false },
+        { label: "Date Added", name: "date_added", selected: true },
         { label: "Status", name: "status", selected: true }
     ];
 
@@ -236,12 +235,54 @@ export default function AdminCustomers() {
         //setData([...data]);
     }
 
+    let isFieldActive = (field) => {
+        let isSelected = true;
+        tableHeaders.forEach(header => {
+            if (field == header.name) {
+                isSelected = header.selected;
+            }
+        })
+        return isSelected;
+    }
+
+    let printPDF = async () => {
+        let body = {
+            title: "Customers",
+            tableHeaders: tableHeaders,
+            searchBy: searchBy,
+            sortBy: sortBy
+        };
+
+        let res = await fetch("/api/admin/customer/print", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': document.cookie.split("=")[1]
+            },
+            body: JSON.stringify(body)
+        });
+        let blob = await res.blob();
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = "report.pdf";
+        document.body.appendChild(a); 
+        a.click();    
+        a.remove();  
+    }
+
     return (
         <div className="admin-main-container">
 
             <div className="admin-header-container">
                 <h1 className="admin-main-title">Customers</h1>
-                <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Customer</Button>
+                <div style={{display: 'flex'}}>
+                    <div style={{marginRight: '20px'}}>
+                        <Button variant="contained" onClick={() => printPDF()}>Print</Button>
+                    </div>
+                    <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Customers</Button>
+                </div>
             </div>
 
             <div className="data-control-container">
@@ -289,60 +330,57 @@ export default function AdminCustomers() {
 
             <AnimatePresence>
                 {data &&
-                    <div style={{overflowX: "auto"}}>
-                    <table>
-                        <thead>
-                            <tr>
-                                {
-                                    returnValues(tableHeaders).map(headerLabel => {
-                                        return <th key={headerLabel}>
-                                            {headerLabel}
-                                        </th>;
+                    <div style={{ overflowX: "auto" }}>
+                        <table>
+                            <thead>
+                                <tr>
+                                    {
+                                        returnValues(tableHeaders).map(headerLabel => {
+                                            return <th key={headerLabel}>
+                                                {headerLabel}
+                                            </th>;
 
-                                    })}
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.map((item, i) => {
-                                return (
-                                    <motion.tr
-                                        key={i.toString()}
-                                        className={item['status'] ? "active-tr" : "inactive-tr"}
-                                        initial={{ opacity: 0, translateY: -10 }}
-                                        animate={{ opacity: 1, translateY: 0 }}
-                                        exit={{ opacity: 0, translateX: -50 }}
-                                        transition={{ duration: 0.3, delay: i * 0.1 }}
-                                    >
-                                        {Object.keys(item).map((key, j) => {
-                                            let feilds = getCurrentFeilds();
-                                            if (feilds.includes(key)) {
-                                                return <motion.td
-                                                >
-                                                    {key != "status" ?
-                                                        item[key].toString()
-                                                        :
-                                                        item[key] ?
-                                                            "active" : "inactive"
-                                                    }
-                                                </motion.td>
-                                            }
                                         })}
-                                        <td style={{ display: 'flex' }}>
-                                            <Switch checked={item['status']} onChange={() => { handleDelete(item["email"]) }} />
-                                            <IconButton aria-label="edit" onClick={() => handleEdit(item["email"])} >
-                                                <EditIcon />
-                                            </IconButton>
-                                        </td>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.map((item, i) => {
+                                    return (
+                                        <motion.tr
+                                            key={i.toString()}
+                                            className={item['status'] ? "active-tr" : "inactive-tr"}
+                                            initial={{ opacity: 0, translateY: -10 }}
+                                            animate={{ opacity: 1, translateY: 0 }}
+                                            exit={{ opacity: 0, translateX: -50 }}
+                                            transition={{ duration: 0.3, delay: i * 0.1 }}
+                                        >
 
-                                    </motion.tr>
-                                );
+                                            {isFieldActive('customer_id') && <td>{item['customer_id']}</td>}
+                                            {isFieldActive('email') && <td>{item['email']}</td>}
+                                            {isFieldActive('password') && <td>{item['password']}</td>}
+                                            {isFieldActive('full_name') && <td>{item['full_name']}</td>}
+                                            {isFieldActive('customer_profession') && <td>{item['customer_profession']}</td>}
+                                            {isFieldActive('customer_education') && <td>{item['customer_education']}</td>}
+                                            {isFieldActive('customer_phone') && <td>{item['customer_phone']}</td>}
+                                            {isFieldActive('date_added') && <td>{formatDate(item['date_added'])}</td>}
+                                            {isFieldActive('status') && <td>{item['status'] ? "active" : "inacitve"}</td>}
 
-                            })
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                                            <td style={{ display: 'flex' }}>
+                                                <Switch checked={item['status']} onChange={() => { handleDelete(item["email"]) }} />
+                                                <IconButton aria-label="edit" onClick={() => handleEdit(item["email"])} >
+                                                    <EditIcon />
+                                                </IconButton>
+                                            </td>
+
+                                        </motion.tr>
+                                    );
+
+                                })
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 }
             </AnimatePresence>
 

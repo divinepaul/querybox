@@ -1,13 +1,14 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import db from '../../db.js';
-import { authMiddleware, csrfMiddleWare } from '../../middleware.js';
+import { authMiddleware, csrfMiddleWare, customerOnly } from '../../middleware.js';
 const router = express.Router();
 
 router.get('/get/:id' , async (req, res) => {
     console.log(req.params.id);
     try {
-        let answer = await db.select().from("tbl_answer")
+        let answer = await db.select("*","tbl_question.post_id as question_post_id","tbl_post.date_added as date_added").from("tbl_answer")
+            .innerJoin("tbl_question", "tbl_answer.question_id", "tbl_question.question_id")
             .innerJoin("tbl_post", "tbl_post.post_id", "tbl_answer.post_id")
             .innerJoin("tbl_customer","tbl_post.customer_id","tbl_customer.customer_id")
             .where('tbl_post.post_id', '=', req.params.id).first();
@@ -44,7 +45,7 @@ router.get('/get-per-question/:id', async (req, res) => {
 });
 
 
-router.post('/publish', authMiddleware, async (req, res) => {
+router.post('/publish', authMiddleware, customerOnly, async (req, res) => {
     try {
         let id = req.body.post_id;
         await db.transaction(async trx => {
@@ -117,7 +118,7 @@ router.post('/update', authMiddleware, async (req, res) => {
 
 
 
-router.post('/new', authMiddleware, csrfMiddleWare, async (req, res) => {
+router.post('/new', authMiddleware, csrfMiddleWare,customerOnly, async (req, res) => {
     let answer = await db.select()
         .from("tbl_answer")
         .innerJoin("tbl_post", "tbl_post.post_id", "tbl_answer.post_id")

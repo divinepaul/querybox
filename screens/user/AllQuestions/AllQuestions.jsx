@@ -6,6 +6,11 @@ import './AllQuestions.css';
 import Snackbar from '@mui/material/Snackbar';
 import { requestWithAuth, request } from "../../../lib/random_functions";
 import SearchContext from '../../../lib/searchcontext';
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { dracula, materialDark, materialLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import ReactMarkdown from 'react-markdown'
 
 import MuiAlert from '@mui/material/Alert';
 
@@ -50,7 +55,7 @@ export default function AllQuestions() {
     return (
         <div className="main-container">
             <div className="questions-header">
-                <h1>All Questions</h1>
+                <h1>Questions List</h1>
                 <Button variant="contained" onClick={askQuestion}> Post new Question</Button>
             </div>
 
@@ -58,15 +63,38 @@ export default function AllQuestions() {
                 {questions.length ?
                     <>
                         {questions.map((question) => {
-                                return <>
+                            return <>
 
                                 {question.status == "published" ?
                                     <div onClick={() => openQuestion(question.post_id)} className="question-list-item">
                                         <h2>{question.question_title}</h2>
-                                        <p>{question.question_description}</p>
+                                        <br/>
+                                        <ReactMarkdown
+                                            children={question.question_description}
+                                            remarkPlugins={[remarkMath]}
+                                            rehypePlugins={[rehypeKatex]}
+                                            components={{
+                                                code({ node, inline, className, children, ...props }) {
+                                                    const match = /language-(\w+)/.exec(className || '')
+                                                    return !inline && match ? (
+                                                        <SyntaxHighlighter
+                                                            children={String(children).replace(/\n$/, '')}
+                                                            style={materialLight}
+                                                            language={match[1]}
+                                                            PreTag="div"
+                                                            {...props}
+                                                        />
+                                                    ) : (
+                                                        <code className={className} {...props}>
+                                                            {children}
+                                                        </code>
+                                                    )
+                                                }
+                                            }}
+                                        />
                                     </div>
                                     : <></>}
-                                </>
+                            </>
                         })}
                     </>
                     : <p>No Questions Found!</p>}

@@ -113,6 +113,9 @@ export default function NavBar() {
             <div className="navbar-actions">
                 {!user ?
                     <>
+                        <Link to="/topics">
+                            <Button color="white" variant="outlined">Topics</Button>
+                        </Link>
                         <Link to="/login">
                             <Button color="white" variant="outlined">Login</Button>
                         </Link>
@@ -121,9 +124,19 @@ export default function NavBar() {
                         </Link>
                     </>
                     :
-                    <Link to="/logout">
-                        <Button color="white" variant="outlined">Logout</Button>
-                    </Link>
+                    <>
+                        <Link to="/topics">
+                            <Button color="white" variant="outlined">Topics</Button>
+                        </Link>
+                        {user && user.customer_id &&
+                            <Link to="/profile">
+                                <Button color="white" variant="outlined">Profile</Button>
+                            </Link>
+                        }
+                        <Link to="/logout">
+                            <Button color="white" variant="outlined">Logout</Button>
+                        </Link>
+                    </>
                 }
             </div>
 
@@ -176,120 +189,120 @@ export default function NavBar() {
                             }
 
                             {["admin", "staff"].includes(user.type) &&
-                            <Link to="/admin/category" >
-                                <ListItem disablePadding>
-                                    <ListItemButton selected={location.pathname == "/admin/category"}>
-                                        <ListItemIcon>
-                                            <BiotechIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary={"Category"} />
-                                    </ListItemButton>
-                                </ListItem>
-                            </Link>
+                                <Link to="/admin/category" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/category"}>
+                                            <ListItemIcon>
+                                                <BiotechIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"Category"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
                             }
 
                             {["admin", "staff"].includes(user.type) &&
-                            <Link to="/admin/topics" >
-                                <ListItem disablePadding>
-                                    <ListItemButton selected={location.pathname == "/admin/topics"}>
-                                        <ListItemIcon>
-                                            <AutoStoriesIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary={"Topics"} />
-                                    </ListItemButton>
-                                </ListItem>
-                            </Link>
+                                <Link to="/admin/topics" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/topics"}>
+                                            <ListItemIcon>
+                                                <AutoStoriesIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"Topics"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
                             }
 
                             {["admin", "staff"].includes(user.type) &&
-                            <Link to="/admin/questions" >
-                                <ListItem disablePadding>
-                                    <ListItemButton selected={location.pathname == "/admin/questions"}>
-                                        <ListItemIcon>
-                                            <QuestionMarkIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary={"Questions"} />
-                                    </ListItemButton>
-                                </ListItem>
-                            </Link>
+                                <Link to="/admin/questions" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/questions"}>
+                                            <ListItemIcon>
+                                                <QuestionMarkIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"Questions"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
                             }
 
                             {["admin", "staff"].includes(user.type) &&
-                            <Link to="/admin/answers" >
-                                <ListItem disablePadding>
-                                    <ListItemButton selected={location.pathname == "/admin/answers"}>
-                                        <ListItemIcon>
-                                            <QuestionAnswerIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary={"Answers"} />
-                                    </ListItemButton>
-                                </ListItem>
-                            </Link>
+                                <Link to="/admin/answers" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/answers"}>
+                                            <ListItemIcon>
+                                                <QuestionAnswerIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"Answers"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
                             }
 
                             {["admin", "staff"].includes(user.type) &&
-                            <Link to="/admin/files" >
-                                <ListItem disablePadding>
-                                    <ListItemButton selected={location.pathname == "/admin/files"}>
-                                        <ListItemIcon>
-                                            <FolderIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary={"Files"} />
-                                    </ListItemButton>
-                                </ListItem>
-                            </Link>
+                                <Link to="/admin/files" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/files"}>
+                                            <ListItemIcon>
+                                                <FolderIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"Files"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
                             }
 
                             {["admin", "staff"].includes(user.type) &&
-                            <Link to="/admin/votes" >
-                                <ListItem disablePadding>
-                                    <ListItemButton selected={location.pathname == "/admin/votes"}>
-                                        <ListItemIcon>
-                                            <ThumbsUpDownIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary={"Votes"} />
-                                    </ListItemButton>
-                                </ListItem>
-                            </Link>
+                                <Link to="/admin/votes" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/votes"}>
+                                            <ListItemIcon>
+                                                <ThumbsUpDownIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"Votes"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
                             }
 
                             {["admin", "staff"].includes(user.type) &&
-                            <Link to="/admin/comments" >
-                                <ListItem disablePadding>
-                                    <ListItemButton selected={location.pathname == "/admin/comments"}>
-                                        <ListItemIcon>
-                                            <ChatIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary={"Comments"} />
-                                    </ListItemButton>
-                                </ListItem>
-                            </Link>
+                                <Link to="/admin/comments" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/comments"}>
+                                            <ListItemIcon>
+                                                <ChatIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"Comments"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
                             }
 
                             {["admin", "staff"].includes(user.type) &&
-                            <Link to="/admin/history" >
-                                <ListItem disablePadding>
-                                    <ListItemButton selected={location.pathname == "/admin/history"}>
-                                        <ListItemIcon>
-                                            <HistoryIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary={"History"} />
-                                    </ListItemButton>
-                                </ListItem>
-                            </Link>
+                                <Link to="/admin/history" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/history"}>
+                                            <ListItemIcon>
+                                                <HistoryIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"History"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
                             }
 
                             {["admin", "staff"].includes(user.type) &&
-                            <Link to="/admin/complaints" >
-                                <ListItem disablePadding>
-                                    <ListItemButton selected={location.pathname == "/admin/complaints"}>
-                                        <ListItemIcon>
-                                            <ReportIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary={"Complaints"} />
-                                    </ListItemButton>
-                                </ListItem>
-                            </Link>
+                                <Link to="/admin/complaints" >
+                                    <ListItem disablePadding>
+                                        <ListItemButton selected={location.pathname == "/admin/complaints"}>
+                                            <ListItemIcon>
+                                                <ReportIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={"Complaints"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Link>
                             }
 
                         </List>

@@ -2,7 +2,7 @@ import Form from "../../components/Form/Form";
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { requestWithAuth } from "../../lib/random_functions";
+import { formatDate, requestWithAuth } from "../../lib/random_functions";
 import UserContext from "../../lib/usercontext";
 import './Admin.css';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -180,9 +180,8 @@ export default function AdminStaff() {
     let tableHeadersData = [
         { label: "Id", name: "staff_id", selected: true },
         { label: "Email", name: "email", selected: true },
-        { label: "First Name", name: "staff_fname", selected: true },
         { label: "Password", name: "password", selected: false },
-        { label: "Last Name", name: "staff_lname", selected: true },
+        { label: "Full Name", name: "full_name", selected: true },
         { label: "House Name", name: "staff_house_name", selected: true },
         { label: "Street", name: "staff_street", selected: true },
         { label: "City", name: "staff_city", selected: true },
@@ -306,12 +305,54 @@ export default function AdminStaff() {
         //setData([...data]);
     }
 
+    let isFieldActive = (field) => {
+        let isSelected = true;
+        tableHeaders.forEach(header=>{
+            if(field == header.name){
+                isSelected = header.selected;
+            }
+        })
+        return isSelected;
+    }
+
+    let printPDF = async () => {
+        let body = {
+            title: "Staff",
+            tableHeaders: tableHeaders,
+            searchBy: searchBy,
+            sortBy: sortBy
+        };
+
+        let res = await fetch("/api/admin/staff/print", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': document.cookie.split("=")[1]
+            },
+            body: JSON.stringify(body)
+        });
+        let blob = await res.blob();
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = "report.pdf";
+        document.body.appendChild(a); 
+        a.click();    
+        a.remove();  
+    }
+
     return (
         <div className="admin-main-container">
 
             <div className="admin-header-container">
                 <h1 className="admin-main-title">Staff</h1>
-                <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Staff</Button>
+                <div style={{display: 'flex'}}>
+                    <div style={{marginRight: '20px'}}>
+                        <Button variant="contained" onClick={() => printPDF()}>Print</Button>
+                    </div>
+                    <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Staff</Button>
+                </div>
             </div>
 
             <div className="data-control-container">
@@ -384,25 +425,23 @@ export default function AdminStaff() {
                                             exit={{ opacity: 0, translateX: -50 }}
                                             transition={{ duration: 0.3, delay: i * 0.1 }}
                                         >
-                                            {Object.keys(item).map((key, j) => {
-                                                let feilds = getCurrentFeilds();
-                                                if (feilds.includes(key)) {
-                                                    return <motion.td
-                                                        key={j}
-                                                    >
-                                                        {key == "status" ?
-                                                            item[key] ?
-                                                                "active" : "inactive"
-                                                            :
-                                                            key == "staff_country" ?
-                                                                countryListShort[item[key]]
-                                                                :
-                                                                item[key].toString()
-                                                        }
 
-                                                    </motion.td>
-                                                }
-                                            })}
+
+                                        {isFieldActive('staff_id') && <td>{item['staff_id']}</td>}
+                                        {isFieldActive('email') && <td>{item['email']}</td>}
+                                        {isFieldActive('password') && <td>{item['password']}</td>}
+                                        {isFieldActive('full_name') && <td>{item['full_name']}</td>}
+                                        {isFieldActive('staff_house_name') && <td>{item['staff_house_name']}</td>}
+                                        {isFieldActive('staff_street') && <td>{item['staff_street']}</td>}
+                                        {isFieldActive('staff_city') && <td>{item['staff_city']}</td>}
+                                        {isFieldActive('staff_state') && <td>{item['staff_state']}</td>}
+                                        {isFieldActive('staff_country') && <td>{countryListShort[item['staff_country']]}</td>}
+                                        {isFieldActive('staff_pincode') && <td>{item['staff_pincode']}</td>}
+                                        {isFieldActive('staff_phone') && <td>{item['staff_phone']}</td>}
+                                        {isFieldActive('staff_salary') && <td>{item['staff_salary']}</td>}
+                                        {isFieldActive('date_added') && <td>{formatDate(item['date_added'])}</td>}
+                                        {isFieldActive('status') && <td>{item['status'] ? "active" : "inacitve"}</td>}
+
                                             <td style={{ display: 'flex' }}>
                                                 <Switch checked={item['status']} onChange={() => { handleDelete(item["email"]) }} />
                                                 <IconButton aria-label="edit" onClick={() => handleEdit(item["email"])} >

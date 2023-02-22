@@ -21,7 +21,7 @@ export default function PostAnswer() {
     let { postNumber, mode } = useParams();
 
     const [description, setDescription] = useState("");
-    const [questionId, setQuestionId] = useState(0);
+    const [questionPostId, setQuestionPostId] = useState(0);
     const [isLoading, setisLoading] = useState(true);
 
     const descRef = useRef();
@@ -45,9 +45,9 @@ export default function PostAnswer() {
             let [res3, filesData] = await requestWithAuth(navigate, `/api/files/get-info-per-post/${postNumber}`);
             setFiles(filesData);
         })().then(() => {
-            console.log(data);
+
             setDescription(data.answer_content);
-            setQuestionId(data.question_id);
+            setQuestionPostId(data.question_post_id);
             setisLoading(false);
         });
     }, []);
@@ -74,7 +74,7 @@ export default function PostAnswer() {
                     answer_content: description,
                 })
                 if (res.status == 200) {
-                    navigate(`/question/${questionId}`);
+                    navigate(`/question/${questionPostId}`);
                 }
             }
         }

@@ -9,7 +9,6 @@ router.post('/login', async (req, res) => {
     // TODO : Fix res.json() 
     //let users = await sql`SELECT * FROM tbl_login WHERE email=${req.body.email} AND status=true`;
     let users = await db.select().from("tbl_login").where('email', '=', req.body.email).andWhere('status', '=', true);
-    console.log(users);
     let user = users[0];
     if (!user) {
         return res.json(400, { errors: { email: "No Such Account Exists" } });
@@ -39,7 +38,16 @@ router.post('/login', async (req, res) => {
         if (user.type == "customer") {
             let customers = await db.select().from("tbl_customer").where('email', '=', user.email);
             let customer = customers[0];
-            return res.status(200).json({ url: "", "message": "Login Sucessful", user: { email: user.email, type: user.type, customer_id: customer.customer_id } });
+            return res.status(200).json({
+                url: "", "message": "Login Sucessful", user: {
+                    email: user.email,
+                    type: user.type,
+                    customer_id: customer.customer_id,
+                    customer_profession: customer.customer_profession,
+                    customer_education: customer.customer_education,
+                    customer_phone: customer.customer_phone
+                }
+            });
         } else {
             return res.status(200).json({ url: "", "message": "Login Sucessful", user: { email: user.email, type: user.type } });
 
@@ -49,7 +57,6 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-    console.log(req.body);
 
     let users = await db.select().from("tbl_login").where('email', '=', req.body.email);
     let user = users[0];
@@ -80,14 +87,23 @@ router.post('/register', async (req, res) => {
             let customers = await db.select().from("tbl_customer").where('email', '=', req.body.email);
             let customer = customers[0];
 
-            let token = jwt.sign({ email: req.body.email, type: "customer",customer_id: customer.customer_id }, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: '60m' });
+            let token = jwt.sign({ email: req.body.email, type: "customer", customer_id: customer.customer_id }, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: '60m' });
 
             res.cookie('jwttoken', token, {
                 maxAge: 1000 * 60 * 60, // would expire after 60 minutes
                 httpOnly: true,
                 secure: true
             });
-            res.status(200).json({ message: "Sucessfully registered", user: { email: req.body.email, type: "customer", customer_id: customer.customer_id } });
+            res.status(200).json({
+                message: "Sucessfully registered", user: {
+                    email: req.body.email,
+                    type: "customer",
+                    customer_id: customer.customer_id,
+                    customer_profession: customer.customer_profession,
+                    customer_education: customer.customer_education,
+                    customer_phone: customer.customer_phone
+                }
+            });
         } catch (error) {
             console.log(error);
             res.status(500).json({ message: "Internal Server Error" });
@@ -109,7 +125,16 @@ router.get('/user', authMiddleware, async (req, res) => {
     } else if (user.type == "customer") {
         let customers = await db.select().from("tbl_customer").where('email', '=', user.email);
         let customer = customers[0];
-        res.status(200).json({ ...user, customer_id: customer.customer_id });
+        console.log("YESSS");
+        res.status(200).json({
+            ...user,
+            customer_id: customer.customer_id,
+            customer_fname: customer.customer_fname,
+            customer_lname: customer.customer_lname,
+            customer_profession: customer.customer_profession,
+            customer_education: customer.customer_education,
+            customer_phone: customer.customer_phone
+        });
     } else {
         res.status(200).json(user);
     }

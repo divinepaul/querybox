@@ -12,7 +12,20 @@ router.get('/get/:id', async (req, res) => {
             .innerJoin("tbl_topic","tbl_question.topic_id","tbl_topic.topic_id")
             .innerJoin("tbl_category","tbl_topic.category_id","tbl_category.category_id")
             .where('tbl_question.post_id', '=', req.params.id);
+
+        let views = await db.select()
+            .from("tbl_history")
+            .count({"total": "*"})
+            .andWhere('question_id', '=', questions[0].question_id).first();
+
+        if(views && views.total){
+            questions[0].view_count = views.total; 
+        } else {
+            questions[0].view_count = 0; 
+        }
+
         res.status(200).json({ question: questions[0] });
+
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Internal Server Error" });

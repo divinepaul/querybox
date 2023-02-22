@@ -1,7 +1,7 @@
 import Form from "../../components/Form/Form";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { requestWithAuth } from "../../lib/random_functions";
+import { requestWithAuth,formatDate } from "../../lib/random_functions";
 import UserContext from "../../lib/usercontext";
 import './Admin.css';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -21,6 +21,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import deepcopy from "deepcopy";
+
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { dracula, materialDark, materialLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import ReactMarkdown from 'react-markdown'
 
 let addCategoryForm = {
     apiRoute: '/api/admin/category/add',
@@ -64,8 +70,7 @@ export default function AdminQuestions() {
         { label: "Question Title", name: "question_title", selected: true },
         { label: "Question Description", name: "question_description", selected: true },
         { label: "Topic", name: "topic_name", selected: true },
-        { label: "Customer First Name", name: "customer_fname", selected: true },
-        { label: "Customer Last Name", name: "customer_lname", selected: true },
+        { label: "Customer Full Name", name: "customer_fname", selected: true },
         { label: "Date Added", name: "date_added", selected: false },
         { label: "Status", name: "status", selected: true }
     ];
@@ -172,12 +177,48 @@ export default function AdminQuestions() {
         setData(dataCopy);
     }
 
+    let isFieldActive = (field) => {
+        let isSelected = true;
+        tableHeaders.forEach(header => {
+            if (field == header.name) {
+                isSelected = header.selected;
+            }
+        })
+        return isSelected;
+    }
+
+    let printPDF = async () => {
+        let body = {
+            title: "Questions",
+            tableHeaders: tableHeaders,
+            searchBy: searchBy,
+            sortBy: sortBy
+        };
+        let res = await fetch("/api/admin/questions/print", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': document.cookie.split("=")[1]
+            },
+            body: JSON.stringify(body)
+        });
+        let blob = await res.blob();
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = "report.pdf";
+        document.body.appendChild(a); 
+        a.click();    
+        a.remove();  
+    }
+
     return (
         <div className="admin-main-container">
 
             <div className="admin-header-container">
                 <h1 className="admin-main-title">Questions</h1>
-                <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Category</Button>
+                <Button variant="contained" onClick={() => printPDF()}>Print</Button>
             </div>
 
             <div className="data-control-container">
@@ -249,15 +290,38 @@ export default function AdminQuestions() {
                                             exit={{ opacity: 0, translateX: -50 }}
                                             transition={{ duration: 0.3, delay: i * 0.1 }}
                                         >
-                                            {Object.keys(item).map((key, j) => {
-                                                let feilds = getCurrentFeilds();
-                                                if (feilds.includes(key)) {
-                                                    return <motion.td
-                                                    >
-                                                        {item[key].toString()}
-                                                    </motion.td>
-                                                }
-                                            })}
+                                            {isFieldActive('question_id') && <td>{item['question_id']}</td>}
+                                            {isFieldActive('question_title') && <td>{item['question_title']}</td>}
+                                            {isFieldActive('question_description') && <td>
+                                                <ReactMarkdown
+                                                    children={item['question_description']}
+                                                    remarkPlugins={[remarkMath]}
+                                                    rehypePlugins={[rehypeKatex]}
+                                                    components={{
+                                                        code({ node, inline, className, children, ...props }) {
+                                                            const match = /language-(\w+)/.exec(className || '')
+                                                            return !inline && match ? (
+                                                                <SyntaxHighlighter
+                                                                    children={String(children).replace(/\n$/, '')}
+                                                                    style={materialLight}
+                                                                    language={match[1]}
+                                                                    PreTag="div"
+                                                                    {...props}
+                                                                />
+                                                            ) : (
+                                                                <code className={className} {...props}>
+                                                                    {children}
+                                                                </code>
+                                                            )
+                                                        }
+                                                    }}
+                                                /></td>
+
+                                            }
+                                            {isFieldActive('topic_name') && <td>{item['topic_name']}</td>}
+                                            {isFieldActive('full_name') && <td>{item['full_name']}</td>}
+                                            {isFieldActive('date_added') && <td>{formatDate(item['date_added'])}</td>}
+                                            {isFieldActive('status') && <td>{item['status']}</td>}
 
                                         </motion.tr>
                                     );

@@ -1,0 +1,14 @@
+.topics-main-container {
+    padding: 5%;
+}
+.topics-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 40px;
+    row-gap: 40px;
+}
+.topic-item {
+    border: 1px solid #555;
+    border-radius: 7px;
+    padding: 40px;
+}

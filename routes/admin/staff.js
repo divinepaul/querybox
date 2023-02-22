@@ -3,11 +3,13 @@ import bcrypt from 'bcrypt';
 import db from '../../db.js';
 import { authMiddleware, csrfMiddleWare } from '../../middleware.js';
 const router = express.Router();
+import PDFDocument from 'pdfkit-table';
+import { formatDate } from '../../lib/random_functions.js';
 
 router.post('/', authMiddleware, async (req, res) => {
     let selectFeilds = {}
     req.body.feilds.forEach(feild => selectFeilds[feild] = feild);
-    let query = db.select({ ...selectFeilds, "email": "tbl_login.email", "status": "status" }).from("tbl_staff").innerJoin('tbl_login', 'tbl_login.email', 'tbl_staff.email');
+    let query = db.select({ ...selectFeilds, "email": "tbl_login.email", "status": "status","full_name": db.raw("CONCAT(tbl_staff.staff_fname, ' ', tbl_staff.staff_lname)") }).from("tbl_staff").innerJoin('tbl_login', 'tbl_login.email', 'tbl_staff.email');
     if (req.body.searchBy.length) {
         req.body.feilds.forEach((feild, _) => {
             if (!["status", "staff_id", "staff_salary"].includes(feild)) {
@@ -27,6 +29,58 @@ router.post('/', authMiddleware, async (req, res) => {
     } else {
         res.status(404).json(data);
     }
+});
+
+router.post('/print', authMiddleware, async (req, res) => {
+
+    let doc = new PDFDocument({ margin: 30, size: 'A4' });
+    doc.fontSize(25).text(`QueryBox ${req.body.title} Report`,{align: 'center'})
+    doc.moveDown();
+    doc.fontSize(14).text(`Reported Generated At: ${new Date().toDateString()}`)
+    doc.moveDown();
+    doc.moveDown();
+
+    let headers = [];
+    let feilds = [];
+    req.body.tableHeaders.forEach(header => {
+        if (header.selected) {
+            headers.push(header.label);
+            feilds.push(header.name);
+        }
+    });
+    req.body.feilds = feilds;
+   
+    let selectFeilds = {}
+    req.body.feilds.forEach(feild => selectFeilds[feild] = feild);
+    let query = db.select({ ...selectFeilds, "email": "tbl_login.email", "status": "status","full_name": db.raw("CONCAT(tbl_staff.staff_fname, ' ', tbl_staff.staff_lname)") }).from("tbl_staff").innerJoin('tbl_login', 'tbl_login.email', 'tbl_staff.email');
+    if (req.body.searchBy.length) {
+        req.body.feilds.forEach((feild, _) => {
+            if (!["status", "staff_id", "staff_salary"].includes(feild)) {
+                if (feild == "email") {
+                    query.orWhereLike("tbl_login.email", `%${req.body.searchBy}%`)
+                } else {
+                    query.orWhereLike(feild, `%${req.body.searchBy}%`)
+                }
+            }
+        });
+    }
+    query.orderBy(req.body.sortBy);
+    let users = await query;
+
+    users = users.map(user=>{
+        return Object.values(user);
+    });
+
+    const tableArray = {
+        headers: headers,
+        rows: users 
+    };
+
+    doc.table(tableArray,{ padding: 10,minRowHeight: 80,});
+    doc.pipe(res);
+
+    doc.end();
+
 });
 
 router.post('/get', authMiddleware, async (req, res) => {

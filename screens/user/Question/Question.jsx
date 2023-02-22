@@ -150,8 +150,8 @@ export default function Question() {
                                     <div style={{ display: 'flex' }}>
                                         <p><b>Category: </b>{question.category_name}</p>
                                         <p><b>Topic: </b>{question.topic_name}</p>
+                                        <p><b>Viewed: </b>{question.view_count} views</p>
                                     </div>
-
                                     <>
                                         <IconButton
                                             aria-label="more"

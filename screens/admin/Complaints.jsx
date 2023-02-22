@@ -1,7 +1,7 @@
 import Form from "../../components/Form/Form";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { requestWithAuth } from "../../lib/random_functions";
+import { requestWithAuth,formatDate } from "../../lib/random_functions";
 import UserContext from "../../lib/usercontext";
 import './Admin.css';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -62,9 +62,9 @@ export default function AdminComplaints() {
     let tableHeadersData = [
         { label: "Complaint Id", name: "complaint_id", selected: true },
         { label: "Post", name: "tbl_post.post_id", selected: true },
-        { label: "Complaint Made By", name: "tbl_login.email", selected: true },
         { label: "Reason", name: "reason", selected: true },
-        { label: "Date Added", name: "tbl_complaint.date_added", selected: false },
+        { label: "Complaint Made By", name: "full_name", selected: true },
+        { label: "Date Added", name: "date_added", selected: true },
     ];
 
     const [data, setData] = useState(null);
@@ -177,11 +177,49 @@ export default function AdminComplaints() {
         setData([...data]);
     }
 
+    let isFieldActive = (field) => {
+        let isSelected = true;
+        tableHeaders.forEach(header => {
+            if (field == header.name) {
+                isSelected = header.selected;
+            }
+        })
+        return isSelected;
+    }
+
+    let printPDF = async () => {
+        let body = {
+            title: "Complaints",
+            tableHeaders: tableHeaders,
+            searchBy: searchBy,
+            sortBy: sortBy
+        };
+
+        let res = await fetch("/api/admin/complaints/print", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': document.cookie.split("=")[1]
+            },
+            body: JSON.stringify(body)
+        });
+        let blob = await res.blob();
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = "report.pdf";
+        document.body.appendChild(a); 
+        a.click();    
+        a.remove();  
+    }
+
     return (
         <div className="admin-main-container">
 
             <div className="admin-header-container">
                 <h1 className="admin-main-title">Complaints</h1>
+                <Button variant="contained" onClick={() => printPDF()}>Print</Button>
             </div>
 
             <div className="data-control-container">
@@ -253,19 +291,19 @@ export default function AdminComplaints() {
                                             exit={{ opacity: 0, translateX: -50 }}
                                             transition={{ duration: 0.3, delay: i * 0.1 }}
                                         >
-                                            {Object.keys(item).map((key, j) => {
-                                                let feilds = getCurrentFeilds();
-                                                if (feilds.includes(key)) {
-                                                    return <motion.td
-                                                    >
-                                                        {key != "tbl_post.post_id" ?
-                                                            item[key].toString()
-                                                            :
-                                                            <a href={"/question/" + item["question_id"]}>link to post</a>
-                                                        }
-                                                    </motion.td>
-                                                }
-                                            })}
+
+
+                                            {isFieldActive('complaint_id') && <td>{item['complaint_id']}</td>}
+                                            {isFieldActive('post_id') && <td>{
+                                                item['type'] == "answer" ?
+                                                    <a href={`/answer-view/${item['link_id']}`}>link to answer</a>
+                                                    :
+                                                    <a href={`/question/${item['link_id']}`}>link to question</a>
+                                            }</td>}
+                                            {isFieldActive('reason') && <td>{item['reason']}</td>}
+                                            {isFieldActive('full_name') && <td>{item['full_name']}</td>}
+                                            {isFieldActive('date_added') && <td>{formatDate(item['date_added'])}</td>}
+
                                             <td>
                                                 <Button variant="contained" onClick={() => {removePost(item["post_id"])}}>Remove Post</Button>
                                             </td>

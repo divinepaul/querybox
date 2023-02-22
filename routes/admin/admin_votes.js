@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt';
 import db from '../../db.js';
 import jwt from 'jsonwebtoken';
 import { authMiddleware, csrfMiddleWare } from '../../middleware.js';
+import PDFDocument from 'pdfkit-table';
+import { formatDate } from '../../lib/random_functions.js';
 
 const router = express.Router();
 
@@ -11,11 +13,16 @@ router.post('/', authMiddleware, async (req, res) => {
 
     req.body.feilds.forEach(feild => selectFeilds[feild] = feild);
 
-    let query = db.select({ ...selectFeilds})
+    let query = db.select({ ...selectFeilds,
+        "date_added": "tbl_vote.date_added",
+        "post_id": "tbl_post.post_id",
+        "full_name": db.raw("CONCAT(tbl_customer.customer_fname, ' ', tbl_customer.customer_lname)"),
+    })
         .from("tbl_vote")
         .innerJoin('tbl_post', 'tbl_vote.post_id', 'tbl_post.post_id')
         .innerJoin('tbl_customer', 'tbl_customer.customer_id', 'tbl_vote.customer_id')
         .innerJoin('tbl_login', 'tbl_login.email', 'tbl_customer.email')
+
 
     if (req.body.searchBy.length) {
         req.body.feilds.forEach((feild, i) => {
@@ -26,6 +33,20 @@ router.post('/', authMiddleware, async (req, res) => {
     }
     query.orderBy(req.body.sortBy);
     let users = await query;
+
+    users = await Promise.all(users.map(async (complaint)=>{
+        let post_id = complaint["post_id"];
+        let question = await db.select().from("tbl_question").where("post_id", '=', post_id).first();
+        if(question){
+            complaint['link_id'] = question.post_id;
+            complaint['type'] = "question";
+        } else {
+            complaint['link_id'] = post_id;
+            complaint['type'] = "answer";
+        }
+        return complaint;
+    }));
+
     if (users) {
         res.status(200).json(users);
     } else {
@@ -33,6 +54,71 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 });
 
+router.post('/print', authMiddleware, async (req, res) => {
+
+    let doc = new PDFDocument({ margin: 30, size: 'A4' });
+    doc.fontSize(25).text(`QueryBox ${req.body.title} Report`,{align: 'center'})
+    doc.moveDown();
+    doc.fontSize(14).text(`Reported Generated At: ${formatDate(new Date())}`)
+    doc.moveDown();
+    doc.moveDown();
+
+    let headers = [];
+    let feilds = [];
+    req.body.tableHeaders.forEach(header => {
+        if (header.selected) {
+            headers.push(header.label);
+            feilds.push(header.name);
+        }
+    });
+    req.body.feilds = feilds;
+   
+    let selectFeilds = {}
+
+    req.body.feilds.forEach(feild => selectFeilds[feild] = feild);
+
+    let query = db.select({ ...selectFeilds,
+        "date_added": "tbl_vote.date_added",
+        "post_id": "tbl_post.post_id",
+        "full_name": db.raw("CONCAT(tbl_customer.customer_fname, ' ', tbl_customer.customer_lname)"),
+    })
+        .from("tbl_vote")
+        .innerJoin('tbl_post', 'tbl_vote.post_id', 'tbl_post.post_id')
+        .innerJoin('tbl_customer', 'tbl_customer.customer_id', 'tbl_vote.customer_id')
+        .innerJoin('tbl_login', 'tbl_login.email', 'tbl_customer.email')
+
+
+    if (req.body.searchBy.length) {
+        req.body.feilds.forEach((feild, i) => {
+            if (feild != "status" && feild != "vote_id" && feild != "vote") {
+                query.orWhereLike(feild, `%${req.body.searchBy}%`)
+            }
+        });
+    }
+    query.orderBy(req.body.sortBy);
+    let users = await query;
+
+
+    users = users.map(user=>{
+        //if(user.question_description){
+
+        //}
+
+        //let question = user;
+        return Object.values(user);
+    });
+
+    console.log(users);
+
+    const tableArray = {
+        headers: headers,
+        rows: users 
+    };
+
+    doc.table(tableArray,{minRowHeight: 70});
+    doc.pipe(res);
+    doc.end();
+});
 //router.post('/get', authMiddleware, async (req, res) => {
 //let id = req.body.id;
 //let data = await db.select().from("tbl_topic").where('topic_id', '=', id).first();

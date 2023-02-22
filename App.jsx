@@ -44,6 +44,9 @@ import AdminVotes from './screens/admin/Votes';
 import AdminComments from './screens/admin/Comments';
 import AdminHistory from './screens/admin/History';
 import AdminComplaints from './screens/admin/Complaints';
+import UserProfile from './screens/user/Profile/Profile';
+import AnswerView from './screens/user/AnswerView/AnswerView';
+import UserTopics from './screens/user/Topics/Topics';
 
 const theme = createTheme({
     palette: {
@@ -64,6 +67,7 @@ export default function App() {
         (async () => {
             let [res, data] = await request("/api/auth/user");
             if (res.status == 200) {
+                console.log(data);
                 setUser(data);
             }
         })();
@@ -177,13 +181,12 @@ export default function App() {
                                 </ProtectedRoute>} />
 
 
-
-
-
-
-
-
-
+                            <Route path="/profile" exact element={
+                                <ProtectedRoute allowedUsers={["customer"]}>
+                                    <Screen>
+                                        <UserProfile />
+                                    </Screen>
+                                </ProtectedRoute>} />
 
                             <Route path="/question/ask/:postNumber/:mode" exact element={
                                 <ProtectedRoute allowedUsers={["customer"]}>
@@ -202,6 +205,16 @@ export default function App() {
                             <Route path="/question/:postNumber" exact element={
                                 <Screen>
                                     <Question />
+                                </Screen>} />
+
+                            <Route path="/answer-view/:postNumber" exact element={
+                                <Screen>
+                                    <AnswerView />
+                                </Screen>} />
+                            
+                            <Route path="/topics" exact element={
+                                <Screen>
+                                    <UserTopics />
                                 </Screen>} />
 
                             <Route path="/questions" exact element={

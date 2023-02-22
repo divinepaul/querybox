@@ -2,6 +2,8 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import db from '../../db.js';
 import jwt from 'jsonwebtoken';
+import PDFDocument from 'pdfkit-table';
+import { formatDate } from '../../lib/random_functions.js';
 
 import { authMiddleware, csrfMiddleWare } from '../../middleware.js';
 const router = express.Router();
@@ -25,6 +27,51 @@ router.post('/', authMiddleware, async (req, res) => {
         res.status(404).json(users);
     }
 });
+
+router.post('/print', authMiddleware, async (req, res) => {
+
+    let doc = new PDFDocument({ margin: 30, size: 'A4' });
+    doc.fontSize(25).text(`QueryBox ${req.body.title} Report`,{align: 'center'})
+    doc.moveDown();
+    doc.fontSize(14).text(`Reported Generated At: ${formatDate(new Date())}`)
+    doc.moveDown();
+    doc.moveDown();
+
+    let headers = [];
+    let feilds = [];
+    req.body.tableHeaders.forEach(header => {
+        if (header.selected) {
+            headers.push(header.label);
+            feilds.push(header.name);
+        }
+    });
+    req.body.feilds = feilds;
+   
+    let query = db.select([...req.body.feilds, "status","category_id"]).from("tbl_category");
+    if (req.body.searchBy.length) {
+        req.body.feilds.forEach((feild, i) => {
+            if (feild != "status" && feild != "category_id") {
+                query.orWhereLike(feild, `%${req.body.searchBy}%`)
+            }
+        });
+    }
+    query.orderBy(req.body.sortBy);
+    let users = await query;
+
+    users = users.map(user=>{
+        return Object.values(user);
+    });
+
+    const tableArray = {
+        headers: headers,
+        rows: users 
+    };
+    doc.table(tableArray,{ padding: 5, minRowHeight: 80});
+    doc.pipe(res);
+    doc.end();
+});
+
+
 
 router.post('/get', authMiddleware, async (req, res) => {
     let id = req.body.id;

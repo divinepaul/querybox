@@ -4,8 +4,11 @@
     display: flex;
     justify-content: center;
     flex-direction: column;
-    padding-left: 10%;
-    padding-top:5%;
     padding-bottom:5%;
     overflow-x: auto;
+    position: relative;
+}
+.auth-form-container {
+    padding-left: 10%;
+    padding-top:5%;
 }
