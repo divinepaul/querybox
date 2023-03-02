@@ -43,7 +43,7 @@ let addCategoryForm = {
     }
 };
 
-export default function AdminComplaints() {
+export default function AdminBannedPosts() {
 
     const navigate = useNavigate();
     let ref = useRef();
@@ -177,14 +177,6 @@ export default function AdminComplaints() {
         setData([...data]);
     }
 
-    let unBanPost = async (post_id) => {
-        await requestWithAuth(navigate, "/api/admin/complaints/unban", {id:post_id});
-        let feilds = getCurrentFeilds();
-        let [res, data] = await requestWithAuth(navigate, "/api/admin/complaints/",
-            { feilds, sortBy, searchBy });
-        setData([...data]);
-    }
-
     let isFieldActive = (field) => {
         let isSelected = true;
         tableHeaders.forEach(header => {
@@ -226,7 +218,7 @@ export default function AdminComplaints() {
         <div className="admin-main-container">
 
             <div className="admin-header-container">
-                <h1 className="admin-main-title">Complaints</h1>
+                <h1 className="admin-main-title">Banned Posts</h1>
                 <Button variant="contained" onClick={() => printPDF()}>Print</Button>
             </div>
 
@@ -286,7 +278,6 @@ export default function AdminComplaints() {
                                             </th>;
 
                                         })}
-                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -300,6 +291,8 @@ export default function AdminComplaints() {
                                             exit={{ opacity: 0, translateX: -50 }}
                                             transition={{ duration: 0.3, delay: i * 0.1 }}
                                         >
+
+
                                             {isFieldActive('complaint_id') && <td>{item['complaint_id']}</td>}
                                             {isFieldActive('post_id') && <td>{
                                                 item['type'] == "answer" ?
@@ -310,13 +303,9 @@ export default function AdminComplaints() {
                                             {isFieldActive('reason') && <td>{item['reason']}</td>}
                                             {isFieldActive('full_name') && <td>{item['full_name']}</td>}
                                             {isFieldActive('date_added') && <td>{formatDate(item['date_added'])}</td>}
-                                            {item['status'] == "published" ? <td>Waiting for action</td> : <td>Post Banned</td> } 
+
                                             <td>
-                                                {item['status'] == "published" ?
-                                                <Button variant="contained" onClick={() => {removePost(item["post_id"])}}>Ban Post</Button>
-                                                :
-                                                <Button variant="outlined" onClick={() => {unBanPost(item["post_id"])}}>Unban Post</Button>
-                                                }
+                                                <Button variant="contained" onClick={() => {removePost(item["post_id"])}}>Remove Post</Button>
                                             </td>
                                         </motion.tr>
                                     );

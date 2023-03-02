@@ -25,8 +25,10 @@ router.post('/', authMiddleware, async (req, res) => {
 
 
     if (req.body.searchBy.length) {
+        req.body.feilds.push("tbl_customer.customer_fname");
+        req.body.feilds.push("tbl_customer.customer_lname");
         req.body.feilds.forEach((feild, i) => {
-            if (feild != "status" && feild != "vote_id" && feild != "vote") {
+            if (!["vote_id","vote","status", "date_added","post_id","full_name"].includes(feild)) {
                 query.orWhereLike(feild, `%${req.body.searchBy}%`)
             }
         });

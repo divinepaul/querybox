@@ -4,7 +4,7 @@ import Form from "../../components/Form/Form";
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { requestWithAuth } from "../../lib/random_functions";
+import { formatDate, requestWithAuth } from "../../lib/random_functions";
 import UserContext from "../../lib/usercontext";
 import './Admin.css';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -23,6 +23,8 @@ import Modal from "../../components/Modal/Modal";
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import deepcopy from "deepcopy";
 
 //async function getData(){
@@ -212,39 +214,81 @@ export default function AdminUsers() {
 
     let isFieldActive = (field) => {
         let isSelected = true;
-        tableHeaders.forEach(header=>{
-            if(field == header.name){
+        tableHeaders.forEach(header => {
+            if (field == header.name) {
                 isSelected = header.selected;
             }
         })
         return isSelected;
     }
 
-    let printPDF = async () => {
-        let body = {
-            title: "Users",
-            tableHeaders: tableHeaders,
-            searchBy: searchBy,
-            sortBy: sortBy
-        };
-
-        let res = await fetch("/api/admin/users/print", {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': document.cookie.split("=")[1]
-            },
-            body: JSON.stringify(body)
+    let getCurrentHeaders = () => {
+        let fields = [];
+        tableHeaders.forEach(header => {
+            if (header.selected) {
+                fields.push(header.label);
+            }
         });
-        let blob = await res.blob();
-        var url = window.URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = "report.pdf";
-        document.body.appendChild(a); 
-        a.click();    
-        a.remove();  
+        return fields;
+    }
+
+    let printPDF = async () => {
+        const doc = new jsPDF()
+        doc.setFontSize(22);
+        doc.text("QUERYBOX USERS REPORT", 10, 20);
+        doc.setFontSize(13);
+        doc.text(`Reported Generated at ${formatDate(new Date())}`, 10, 30);
+        doc.setFontSize(15);
+        doc.text(`Address:`, 10, 40);
+        doc.setFontSize(10);
+        doc.text(`No: 9B2, 9th floor, Wing-2`, 12, 45);
+        doc.text(`Jyothirmaya building,`, 12, 50);
+        doc.text(`Infopark Phase 2`, 12, 55);
+        doc.text(`Brahmapuram P.O`, 12, 60);
+        doc.text(`682303`, 12, 65);
+        doc.text(`Kerala,India`, 12, 70);
+        doc.text(`mail@querybox.xyz`, 12, 75);
+
+
+        let tableData = data.map(item => {
+            if('status' in item){
+                item['status'] = (item['status'] ? 'active' : 'inactive')
+            }
+            return item;
+        })
+
+        tableData = data.map(item => {
+            return Object.values(item);
+        });
+
+
+        autoTable(doc, {
+            head: [getCurrentHeaders()],
+            startY: 80,
+            startX: 10,
+            body:
+                tableData,
+
+            didDrawPage: function(data) {
+
+                // Footer
+                var str = "QueryBox Report | Page " + doc.internal.getNumberOfPages();
+
+                doc.setFontSize(10);
+
+                // jsPDF 1.4+ uses getWidth, <1.4 uses .width
+                var pageSize = doc.internal.pageSize;
+                var pageHeight = pageSize.height
+                    ? pageSize.height
+                    : pageSize.getHeight();
+                doc.text(str, data.settings.margin.left, pageHeight - 10);
+            }
+
+        })
+
+
+        doc.save('user-report.pdf')
+
     }
 
 
@@ -255,8 +299,8 @@ export default function AdminUsers() {
 
             <div className="admin-header-container">
                 <h1 className="admin-main-title">Users</h1>
-                <div style={{display: 'flex'}}>
-                    <div style={{marginRight: '20px'}}>
+                <div style={{ display: 'flex' }}>
+                    <div style={{ marginRight: '20px' }}>
                         <Button variant="contained" onClick={() => printPDF()}>Print</Button>
                     </div>
                     <Button variant="contained" onClick={() => setIsAddModalOpen(!isAddModalOpen)}>Add Admin</Button>
@@ -308,7 +352,7 @@ export default function AdminUsers() {
 
             <AnimatePresence>
                 {data &&
-                    <table>
+                    <table id="admin-table">
                         <thead>
                             <tr>
                                 {

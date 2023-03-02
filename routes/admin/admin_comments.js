@@ -24,8 +24,11 @@ router.post('/', authMiddleware, async (req, res) => {
         .innerJoin('tbl_login', 'tbl_login.email', 'tbl_customer.email')
 
     if (req.body.searchBy.length) {
+
+        req.body.feilds.push("tbl_customer.customer_fname");
+        req.body.feilds.push("tbl_customer.customer_lname");
         req.body.feilds.forEach((feild, i) => {
-            if (feild != "tbl_comment.status" && feild != "comment_id") {
+            if (!["comment_id","vote","tbl_comment.status", "date_added","post_id","full_name"].includes(feild)) {
                 query.orWhereILike(feild, `%${req.body.searchBy}%`)
             }
         });

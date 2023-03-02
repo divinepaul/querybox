@@ -24,8 +24,10 @@ router.post('/', authMiddleware, async (req, res) => {
         .innerJoin('tbl_customer', 'tbl_customer.customer_id', 'tbl_history.customer_id')
 
     if (req.body.searchBy.length) {
+        req.body.feilds.push("tbl_customer.customer_fname");
+        req.body.feilds.push("tbl_customer.customer_lname");
         req.body.feilds.forEach((feild, i) => {
-            if (feild != "status" && feild != "history_id") {
+            if (!["history_id", "status", "date_added","post_id","full_name"].includes(feild)) {
                 query.orWhereILike(feild, `%${req.body.searchBy}%`)
             }
         });

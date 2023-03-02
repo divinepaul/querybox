@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS tbl_vote (
     vote int NOT NULL,
     date_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (customer_id) REFERENCES tbl_customer(customer_id),
-    FOREIGN KEY (post_id) REFERENCES tbl_post(post_id)
+    FOREIGN KEY (post_id) REFERENCES tbl_post(post_id),
+    UNIQUE (post_id, customer_id)
 );
 
 

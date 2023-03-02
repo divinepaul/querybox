@@ -567,6 +567,14 @@ ALTER TABLE ONLY public.tbl_complaint
 
 
 --
+-- Name: tbl_complaint tbl_complaint_post_id_customer_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tbl_complaint
+    ADD CONSTRAINT tbl_complaint_post_id_customer_id_key UNIQUE (post_id, customer_id);
+
+
+--
 -- Name: tbl_customer tbl_customer_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -588,6 +596,14 @@ ALTER TABLE ONLY public.tbl_files
 
 ALTER TABLE ONLY public.tbl_history
     ADD CONSTRAINT tbl_history_pkey PRIMARY KEY (history_id);
+
+
+--
+-- Name: tbl_history tbl_history_question_id_customer_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tbl_history
+    ADD CONSTRAINT tbl_history_question_id_customer_id_key UNIQUE (question_id, customer_id);
 
 
 --
@@ -636,6 +652,14 @@ ALTER TABLE ONLY public.tbl_topic
 
 ALTER TABLE ONLY public.tbl_vote
     ADD CONSTRAINT tbl_vote_pkey PRIMARY KEY (vote_id);
+
+
+--
+-- Name: tbl_vote tbl_vote_post_id_customer_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tbl_vote
+    ADD CONSTRAINT tbl_vote_post_id_customer_id_key UNIQUE (post_id, customer_id);
 
 
 --

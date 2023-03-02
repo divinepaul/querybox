@@ -34,6 +34,7 @@ import ThumbsUpDownIcon from '@mui/icons-material/ThumbsUpDown';
 import ChatIcon from '@mui/icons-material/Chat';
 import HistoryIcon from '@mui/icons-material/History';
 import ReportIcon from '@mui/icons-material/Report';
+import BlockIcon from '@mui/icons-material/Block';
 
 //const Search = styled('div')(({ theme }) => ({
 //position: 'relative',
@@ -303,6 +304,20 @@ export default function NavBar() {
                                         </ListItemButton>
                                     </ListItem>
                                 </Link>
+                            }
+
+                            {
+                                //["admin", "staff"].includes(user.type) &&
+                                //<Link to="/admin/banned" >
+                                    //<ListItem disablePadding>
+                                        //<ListItemButton selected={location.pathname == "/admin/banned"}>
+                                            //<ListItemIcon>
+                                                //<BlockIcon />
+                                            //</ListItemIcon>
+                                            //<ListItemText primary={"Banned Posts"} />
+                                        //</ListItemButton>
+                                    //</ListItem>
+                                //</Link>
                             }
 
                         </List>

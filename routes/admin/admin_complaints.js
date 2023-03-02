@@ -10,14 +10,13 @@ const router = express.Router();
 
 router.post('/', authMiddleware, async (req, res) => {
     let selectFeilds = {}
-
     req.body.feilds.forEach(feild => selectFeilds[feild] = feild);
-
     let query = db.select({ ...selectFeilds, 
         "post_id": "tbl_post.post_id",
         "date_added": "tbl_complaint.date_added",
         "post_id": "tbl_post.post_id",
         "full_name": db.raw("CONCAT(tbl_customer.customer_fname, ' ', tbl_customer.customer_lname)"),
+        "status": "tbl_post.status" 
     })
         .from("tbl_complaint")
         .innerJoin('tbl_post', 'tbl_post.post_id', 'tbl_complaint.post_id')
@@ -25,16 +24,19 @@ router.post('/', authMiddleware, async (req, res) => {
         .innerJoin('tbl_login', 'tbl_login.email', 'tbl_customer.email')
 
     if (req.body.searchBy.length) {
+        req.body.feilds.push("tbl_customer.customer_fname");
+        req.body.feilds.push("tbl_customer.customer_lname");
         req.body.feilds.forEach((feild, i) => {
-            if (feild != "status" && feild != "complaint_id") {
+            if (!["complaint_id","status","date_added","tbl_post.post_id","full_name"].includes(feild)) {
                 query.orWhereILike(feild, `%${req.body.searchBy}%`)
             }
         });
     }
-    query.andWhereNot("tbl_post.status","=","removed");
+
+    //query.andWhereNot("tbl_post.status","=","removed");
+
     query.orderBy(req.body.sortBy);
     let users = await query;
-
     let complaints = await Promise.all(users.map(async (complaint)=>{
         let post_id = complaint["post_id"];
         let question = await db.select().from("tbl_question").where("post_id", '=', post_id).first();
@@ -48,7 +50,6 @@ router.post('/', authMiddleware, async (req, res) => {
         return complaint;
     }));
 
-
     console.log(complaints);
 
     if (users) {
@@ -56,6 +57,7 @@ router.post('/', authMiddleware, async (req, res) => {
     } else {
         res.status(404).json(users);
     }
+
 });
 
 router.post('/print', authMiddleware, async (req, res) => {
@@ -140,6 +142,24 @@ router.post('/delete', authMiddleware, async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 });
+
+router.post('/unban', authMiddleware, async (req, res) => {
+    let id = req.body.id;
+    try {
+        await db.transaction(async trx => {
+            await trx('tbl_post')
+                .where('post_id', '=', id)
+                .update({
+                    status: "published" 
+                })
+        })
+        res.status(200).json({ message: "Sucessfully unbanned!" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
 //router.post('/get', authMiddleware, async (req, res) => {
 //let id = req.body.id;
 //let data = await db.select().from("tbl_topic").where('topic_id', '=', id).first();
@@ -210,4 +230,3 @@ router.post('/delete', authMiddleware, async (req, res) => {
 
 
 export default router;
-

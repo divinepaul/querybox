@@ -47,11 +47,13 @@ import AdminComplaints from './screens/admin/Complaints';
 import UserProfile from './screens/user/Profile/Profile';
 import AnswerView from './screens/user/AnswerView/AnswerView';
 import UserTopics from './screens/user/Topics/Topics';
+import AdminBannedPosts from './screens/admin/BannedPosts';
 
 const theme = createTheme({
     palette: {
         white: createColor('#ffffff'),
         green: createColor('#46e619'),
+        grey: createColor('#6e737a'),
         primary: {
             main: '#7d3aa8',
         },
@@ -180,6 +182,13 @@ export default function App() {
                                     </Screen>
                                 </ProtectedRoute>} />
 
+
+                            <Route path="/admin/banned" exact element={
+                                <ProtectedRoute allowedUsers={["admin", "staff"]}>
+                                    <Screen>
+                                        <AdminBannedPosts />
+                                    </Screen>
+                                </ProtectedRoute>} />
 
                             <Route path="/profile" exact element={
                                 <ProtectedRoute allowedUsers={["customer"]}>

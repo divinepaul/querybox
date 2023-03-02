@@ -6,22 +6,22 @@ const router = express.Router();
 
 router.get('/get/:id', async (req, res) => {
     try {
-        let questions = await db.select("*","tbl_post.date_added").from("tbl_question")
-            .innerJoin("tbl_post","tbl_post.post_id","tbl_question.post_id")
-            .innerJoin("tbl_customer","tbl_post.customer_id","tbl_customer.customer_id")
-            .innerJoin("tbl_topic","tbl_question.topic_id","tbl_topic.topic_id")
-            .innerJoin("tbl_category","tbl_topic.category_id","tbl_category.category_id")
+        let questions = await db.select("*", "tbl_post.date_added").from("tbl_question")
+            .innerJoin("tbl_post", "tbl_post.post_id", "tbl_question.post_id")
+            .innerJoin("tbl_customer", "tbl_post.customer_id", "tbl_customer.customer_id")
+            .innerJoin("tbl_topic", "tbl_question.topic_id", "tbl_topic.topic_id")
+            .innerJoin("tbl_category", "tbl_topic.category_id", "tbl_category.category_id")
             .where('tbl_question.post_id', '=', req.params.id);
 
         let views = await db.select()
             .from("tbl_history")
-            .count({"total": "*"})
+            .count({ "total": "*" })
             .andWhere('question_id', '=', questions[0].question_id).first();
 
-        if(views && views.total){
-            questions[0].view_count = views.total; 
+        if (views && views.total) {
+            questions[0].view_count = views.total;
         } else {
-            questions[0].view_count = 0; 
+            questions[0].view_count = 0;
         }
 
         res.status(200).json({ question: questions[0] });
@@ -32,7 +32,7 @@ router.get('/get/:id', async (req, res) => {
     }
 });
 
-router.get('/history/add/:id',authMiddleware,customerOnly, async (req, res) => {
+router.get('/history/add/:id', authMiddleware, customerOnly, async (req, res) => {
     console.log("history add");
     try {
         let view = await db.select()
@@ -41,6 +41,7 @@ router.get('/history/add/:id',authMiddleware,customerOnly, async (req, res) => {
             .andWhere('question_id', '=', req.params.id).first();
 
         if (!view) {
+
             await db('tbl_history').insert({
                 customer_id: req.user.customer_id,
                 question_id: req.params.id
@@ -53,25 +54,25 @@ router.get('/history/add/:id',authMiddleware,customerOnly, async (req, res) => {
     }
 });
 
-router.post('/' , async (req, res) => {
-    let query = db.select("*","tbl_post.status").from("tbl_question")
-        .innerJoin("tbl_post","tbl_post.post_id","tbl_question.post_id")
-        .innerJoin("tbl_topic","tbl_question.topic_id","tbl_topic.topic_id")
-        .innerJoin("tbl_category","tbl_topic.category_id","tbl_category.category_id")
+router.post('/', async (req, res) => {
+    let query = db.select("*", "tbl_post.status").from("tbl_question")
+        .innerJoin("tbl_post", "tbl_post.post_id", "tbl_question.post_id")
+        .innerJoin("tbl_topic", "tbl_question.topic_id", "tbl_topic.topic_id")
+        .innerJoin("tbl_category", "tbl_topic.category_id", "tbl_category.category_id")
 
 
     if (req.body.searchBy.length) {
         req.body.feilds.forEach((feild, i) => {
-            if (!["post_id","status","question_id","customer_id"].includes(feild)) {
+            if (!["post_id", "status", "question_id", "customer_id"].includes(feild)) {
                 query.orWhereILike(feild, `%${req.body.searchBy}%`)
             }
         });
     }
 
-    query.andWhere("tbl_post.status",'=','published');
-    
+    query.andWhere("tbl_post.status", '=', 'published');
+
     //query.orderBy(req.body.sortBy);
-    
+
     let users = await query;
     if (users) {
         res.status(200).json(users);
@@ -80,11 +81,11 @@ router.post('/' , async (req, res) => {
     }
 
     //try {
-        //let questions = await db.select().from("tbl_question").where('post_id', '=', req.params.id);
-        //res.status(200).json({ question: questions[0] });
+    //let questions = await db.select().from("tbl_question").where('post_id', '=', req.params.id);
+    //res.status(200).json({ question: questions[0] });
     //} catch (error) {
-        //console.log(error);
-        //res.status(500).json({ message: "Internal Server Error" });
+    //console.log(error);
+    //res.status(500).json({ message: "Internal Server Error" });
     //}
 });
 
@@ -103,38 +104,43 @@ router.get('/topics', authMiddleware, async (req, res) => {
 
 router.post('/publish', authMiddleware, async (req, res) => {
     try {
-    let id = req.body.post_id;
-    await db.transaction(async trx => {
-        await trx('tbl_question')
-            .where('post_id', '=', id)
-            .update({
-                question_title: req.body.question_title,
-                question_description: req.body.question_description,
-                topic_id: req.body.topic_id,
-            })
+        let id = req.body.post_id;
+        await db.transaction(async trx => {
+            await trx('tbl_question')
+                .where('post_id', '=', id)
+                .update({
+                    question_title: req.body.question_title,
+                    question_description: req.body.question_description,
+                    topic_id: req.body.topic_id,
+                })
 
-        await trx('tbl_post')
-            .where('post_id', '=', id)
-            .update({
-                status: "published",
-                date_modified: db.raw('CURRENT_TIMESTAMP'),
-                date_added: db.raw('CURRENT_TIMESTAMP')
-            })
+            await trx('tbl_post')
+                .where('post_id', '=', id)
+                .update({
+                    status: "published",
+                    date_modified: db.raw('CURRENT_TIMESTAMP'),
+                    date_added: db.raw('CURRENT_TIMESTAMP')
+                })
 
-        await trx('tbl_post')
-            .where('post_id', '=', id)
-            .update({
-                status: "published",
-                date_modified: db.raw('CURRENT_TIMESTAMP'),
-                date_added: db.raw('CURRENT_TIMESTAMP')
+            await trx('tbl_post')
+                .where('post_id', '=', id)
+                .update({
+                    status: "published",
+                    date_modified: db.raw('CURRENT_TIMESTAMP'),
+                    date_added: db.raw('CURRENT_TIMESTAMP')
+                })
+
+            try {
+
+                await trx('tbl_vote').insert({
+                    customer_id: req.user.customer_id,
+                    post_id: id,
+                    vote: 1
+                });
+            } catch (err) { }
+
         })
-        await trx('tbl_vote').insert({
-            customer_id: req.user.customer_id,
-            post_id: id,
-            vote: 1 
-        });
-    })
-    res.status(200).json({ message: "Sucessfully published!" });
+        res.status(200).json({ message: "Sucessfully published!" });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Internal Server Error" });
@@ -154,11 +160,11 @@ router.post('/update', authMiddleware, async (req, res) => {
                     topic_id: req.body.topic_id
                 })
 
-        await trx('tbl_post')
-            .where('post_id', '=', id)
-            .update({
-                date_modified: db.raw('CURRENT_TIMESTAMP')
-            })
+            await trx('tbl_post')
+                .where('post_id', '=', id)
+                .update({
+                    date_modified: db.raw('CURRENT_TIMESTAMP')
+                })
         })
         res.status(200).json({ message: "Sucessfully edited!" });
     } catch (error) {
@@ -175,7 +181,7 @@ router.get('/new', authMiddleware, async (req, res) => {
 
     let question = await db.select()
         .from("tbl_question")
-        .innerJoin("tbl_post","tbl_post.post_id","tbl_question.post_id")
+        .innerJoin("tbl_post", "tbl_post.post_id", "tbl_question.post_id")
         .where('question_title', '=', 'Your Question Title')
         .andWhere('question_description', '=', `Enter the details of your question here. \n\nYou can use markdown to format your question.`)
         .andWhere('topic_id', '=', 1)
@@ -184,7 +190,7 @@ router.get('/new', authMiddleware, async (req, res) => {
 
     console.log(question);
 
-    if(question){
+    if (question) {
         return res.status(200).json({ message: "Sucessfully inserted", post_id: question.post_id });
     }
 
